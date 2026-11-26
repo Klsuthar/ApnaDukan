@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 100" fill="none">
+  <rect x="4" y="4" width="92" height="92" rx="22" fill="#1E3A5F"/>
+  <path d="M30 27H70L76 39C76 43 72.5 46.5 68.5 46.5C64.8 46.5 61.8 43.8 61 40.2C60.2 43.8 57.2 46.5 53.5 46.5C49.8 46.5 46.8 43.8 46 40.2C45.2 43.8 42.2 46.5 38.5 46.5C34.8 46.5 31.8 43.8 31 40.2C30.2 43.8 27.2 46.5 23.5 46.5C19.5 46.5 16 43 16 39L30 27Z" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M22 39H70" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M28 49V72C28 74 29.5 75.5 31.5 75.5H68.5C70.5 75.5 72 74 72 72V49" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M38 49V75.5M62 49V75.5" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M43 54H57M43 60H52" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round"/>
+  <path d="M44 67L48.5 71L57 62.5" stroke="#38B2AC" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="114" y="48" font-family="Segoe UI, system-ui, sans-serif" font-size="34" font-weight="800" fill="#1E3A5F">Apna<tspan fill="#2C7A7B">Dukan</tspan></text>
+  <text x="115" y="74" font-family="Segoe UI, system-ui, sans-serif" font-size="14" font-weight="600" fill="#64748B" letter-spacing="0.4">OFFLINE STOCK &amp; BILLING PWA</text>
+</svg>

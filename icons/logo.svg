@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <radialGradient id="bgGlow" cx="50%" cy="50%" r="48%">
+      <stop offset="0%" stop-color="#2C7A7B" stop-opacity="0.55"/>
+      <stop offset="65%" stop-color="#1E3A5F" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#1E3A5F" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="#1E3A5F"/>
+  <rect width="512" height="512" rx="112" fill="url(#bgGlow)"/>
+  <!-- Storefront Awning -->
+  <path d="M164 146H348L374 198C374 216 359 230 341 230C325 230 312 218 309 203C306 218 293 230 277 230C261 230 248 218 245 203C242 218 229 230 213 230C197 230 184 218 181 203C178 218 165 230 149 230C131 230 116 216 116 198L164 146Z" stroke="#FFFFFF" stroke-width="18" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M142 198H370" stroke="#FFFFFF" stroke-width="16" stroke-linecap="round"/>
+  <path d="M196 146L182 198M244 146L240 198M292 146L296 198M330 146L348 198" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round"/>
+  <!-- Storefront Body & Receipt -->
+  <path d="M156 244V352C156 361 163 368 172 368H340C349 368 356 361 356 352V244" stroke="#FFFFFF" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M204 244V368M308 244V368" stroke="#FFFFFF" stroke-width="16" stroke-linecap="round"/>
+  <!-- Receipt Lines -->
+  <path d="M226 266H286M226 292H264" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round"/>
+  <!-- Teal Checkmark -->
+  <path d="M230 326L250 344L286 306" stroke="#38B2AC" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
