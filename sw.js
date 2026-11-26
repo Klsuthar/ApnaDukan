@@ -1,4 +1,4 @@
-const CACHE_NAME = 'apnadukan-pwa-v1.0.1';
+const CACHE_NAME = 'apnadukan-pwa-v1.0.2';
 
 const APP_SHELL_ASSETS = [
   './',
@@ -71,16 +71,34 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  const isImmutableVendor = url.pathname.includes('/vendor/') || url.pathname.includes('/icons/');
+
+  if (isImmutableVendor) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        if (cached) return cached;
+        return fetch(request).then((response) => {
+          if (response && response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        });
+      })
+    );
+    return;
+  }
+
+  // Network-first for app HTML/CSS/JS so updates load immediately when online, offline uses cache
   event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) return cached;
-      return fetch(request).then((response) => {
+    fetch(request)
+      .then((response) => {
         if (response && response.ok) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
         }
         return response;
-      });
-    })
+      })
+      .catch(() => caches.match(request))
   );
 });

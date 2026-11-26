@@ -109,13 +109,25 @@
     }
   }
 
-  function renderSettingsForm() {
-    const s = state.settings;
-    document.getElementById('set-shop-name').value = s.shopName || '';
-    document.getElementById('set-phone').value = s.phone || '';
-    document.getElementById('set-address').value = s.address || '';
-    document.getElementById('set-footer-note').value = s.footerNote || '';
+  function readSettingsInputs() {
+    return {
+      shopName: document.getElementById('set-shop-name').value.trim(),
+      phone: document.getElementById('set-phone').value.trim(),
+      address: document.getElementById('set-address').value.trim(),
+      footerNote: document.getElementById('set-footer-note').value.trim()
+    };
+  }
 
+  function applySettingsInputsToState(useDefaultIfEmpty) {
+    const vals = readSettingsInputs();
+    state.settings.shopName = vals.shopName || (useDefaultIfEmpty ? Storage.DEFAULT_SETTINGS.shopName : state.settings.shopName);
+    state.settings.phone = vals.phone;
+    state.settings.address = vals.address;
+    state.settings.footerNote = vals.footerNote;
+  }
+
+  function renderLogoPreview() {
+    const s = state.settings;
     const preview = document.getElementById('set-logo-preview');
     const removeBtn = document.getElementById('set-logo-remove-btn');
     if (s.logo && s.logo.startsWith('data:image/')) {
@@ -129,6 +141,15 @@
     }
   }
 
+  function renderSettingsForm() {
+    const s = state.settings;
+    document.getElementById('set-shop-name').value = s.shopName || '';
+    document.getElementById('set-phone').value = s.phone || '';
+    document.getElementById('set-address').value = s.address || '';
+    document.getElementById('set-footer-note').value = s.footerNote || '';
+    renderLogoPreview();
+  }
+
   function resizeLogoToBase64(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -138,8 +159,8 @@
         img.onerror = () => reject(new Error('Invalid image file'));
         img.onload = () => {
           const maxDim = 360;
-          let w = img.width;
-          let h = img.height;
+          let w = img.naturalWidth || img.width || 300;
+          let h = img.naturalHeight || img.height || 300;
           if (w > maxDim || h > maxDim) {
             const ratio = Math.min(maxDim / w, maxDim / h);
             w = Math.round(w * ratio);
@@ -151,7 +172,11 @@
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
           const isPngLike = file.type === 'image/png' || file.type === 'image/webp' || file.type === 'image/svg+xml';
-          resolve(canvas.toDataURL(isPngLike ? 'image/png' : 'image/jpeg', 0.88));
+          let dataUrl = canvas.toDataURL(isPngLike ? 'image/png' : 'image/jpeg', 0.88);
+          if (dataUrl.length > 350000) {
+            dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+          }
+          resolve(dataUrl);
         };
         img.src = reader.result;
       };
@@ -1326,7 +1351,15 @@
       showToast(restoreStock ? 'बिल डिलीट हुआ और स्टॉक वापस जुड़ गया!' : 'बिल डिलीट हो गया।', 'success');
     });
 
-    // Settings Form & Logo Upload
+    // Settings Form & Logo Upload (preserves typed fields across logo changes + saves reliably)
+    ['set-shop-name', 'set-phone', 'set-address', 'set-footer-note'].forEach((fieldId) => {
+      document.getElementById(fieldId).addEventListener('change', () => {
+        applySettingsInputsToState(false);
+        Storage.saveState(state);
+        renderHeader();
+      });
+    });
+
     document.getElementById('set-logo-upload-btn').addEventListener('click', () => {
       document.getElementById('set-logo-input').click();
     });
@@ -1337,9 +1370,15 @@
       if (!file) return;
       try {
         const base64 = await resizeLogoToBase64(file);
+        applySettingsInputsToState(true);
         state.settings.logo = base64;
-        persistAndRefresh();
-        showToast('दुकान का लोगो अपलोड और सेव हो गया!', 'success');
+        if (!Storage.saveState(state)) {
+          showToast('स्टोरेज भर गया है! कृपया छोटा लोगो उपयोग करें।', 'error');
+          return;
+        }
+        renderHeader();
+        renderLogoPreview();
+        showToast('दुकान का लोगो व विवरण सेव हो गया!', 'success');
       } catch (err) {
         console.error(err);
         showToast('इमेज अपलोड करने में त्रुटि। कृपया वैध इमेज चुनें।', 'error');
@@ -1347,19 +1386,24 @@
     });
 
     document.getElementById('set-logo-remove-btn').addEventListener('click', () => {
+      applySettingsInputsToState(true);
       state.settings.logo = '';
-      persistAndRefresh();
+      Storage.saveState(state);
+      renderHeader();
+      renderLogoPreview();
       showToast('दुकान का लोगो हटा दिया गया।', 'success');
     });
 
     document.getElementById('settings-form').addEventListener('submit', (e) => {
       e.preventDefault();
-      state.settings.shopName = document.getElementById('set-shop-name').value.trim() || Storage.DEFAULT_SETTINGS.shopName;
-      state.settings.phone = document.getElementById('set-phone').value.trim();
-      state.settings.address = document.getElementById('set-address').value.trim();
-      state.settings.footerNote = document.getElementById('set-footer-note').value.trim();
-      persistAndRefresh();
-      showToast('दुकान की सेटिंग्स सेव हो गईं!', 'success');
+      applySettingsInputsToState(true);
+      if (!Storage.saveState(state)) {
+        showToast('डेटा सेव नहीं हो सका (ब्राउज़र स्टोरेज सीमा/त्रुटि)।', 'error');
+        return;
+      }
+      renderHeader();
+      renderSettingsForm();
+      showToast('दुकान का नाम, नंबर, पता और लोगो सफलतापूर्वक सेव हो गए!', 'success');
     });
 
     // Backup, Export & Import
@@ -1427,11 +1471,16 @@
     document.getElementById('open-reset-modal-btn').addEventListener('click', () => openModal('reset-modal'));
 
     document.getElementById('reset-blank-btn').addEventListener('click', () => {
+      const keepSettings = document.getElementById('reset-keep-settings').checked;
+      const savedSettings = Object.assign({}, state.settings);
       state = Storage.createInitialState(false);
+      if (keepSettings) {
+        state.settings = savedSettings;
+      }
       closeModal('reset-modal');
       persistAndRefresh();
       resetBillForm();
-      showToast('सारा डेटा साफ हो गया — अब आप नया काम शुरू कर सकते हैं!', 'success');
+      showToast('सारा स्टॉक व बिल डेटा साफ हो गया — अब आप नया काम शुरू कर सकते हैं!', 'success');
     });
 
     document.getElementById('reset-sample-btn').addEventListener('click', () => {
