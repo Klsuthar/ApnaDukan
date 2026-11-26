@@ -45,22 +45,22 @@
 
     // Sheet 1: Summary
     const summaryRows = [
-      { Metric: 'Shop Name / दुकान का नाम', Value: state.settings.shopName },
-      { Metric: 'Address / पता', Value: state.settings.address || '-' },
-      { Metric: 'Mobile / मोबाइल', Value: state.settings.phone || '-' },
-      { Metric: 'Export Date / तारीख', Value: storage.getTodayISO() },
+      { Metric: 'Shop Name', Value: state.settings.shopName },
+      { Metric: 'Address', Value: state.settings.address || '-' },
+      { Metric: 'Mobile', Value: state.settings.phone || '-' },
+      { Metric: 'Export Date', Value: storage.getTodayISO() },
       { Metric: '', Value: '' },
-      { Metric: 'Total Products (कुल आइटम)', Value: metrics.totalProducts },
-      { Metric: 'Total Stock Value ₹ (कुल स्टॉक कीमत)', Value: metrics.totalStockValue },
-      { Metric: 'Total Sales ₹ (कुल बिक्री)', Value: metrics.totalSales },
-      { Metric: 'Est. Profit ₹ (अनुमानित मुनाफा)', Value: metrics.estProfit },
-      { Metric: 'Low Stock Items (कम स्टॉक अलर्ट)', Value: metrics.lowStockCount },
-      { Metric: 'Out of Stock Items (खत्म आइटम)', Value: metrics.outOfStockCount },
-      { Metric: 'Total Bills (कुल बिल)', Value: (state.billHistory || []).length },
-      { Metric: 'Total Stock In Entries (कुल माल एंट्री)', Value: (state.stockInHistory || []).length }
+      { Metric: 'Total Products', Value: metrics.totalProducts },
+      { Metric: 'Total Stock Value (₹)', Value: metrics.totalStockValue },
+      { Metric: 'Total Sales (₹)', Value: metrics.totalSales },
+      { Metric: 'Est. Profit (₹)', Value: metrics.estProfit },
+      { Metric: 'Low Stock Items', Value: metrics.lowStockCount },
+      { Metric: 'Out of Stock Items', Value: metrics.outOfStockCount },
+      { Metric: 'Total Bills', Value: (state.billHistory || []).length },
+      { Metric: 'Total Stock In Entries', Value: (state.stockInHistory || []).length }
     ];
     const wsSummary = XLSX.utils.json_to_sheet(summaryRows);
-    wsSummary['!cols'] = [{ wch: 38 }, { wch: 36 }];
+    wsSummary['!cols'] = [{ wch: 28 }, { wch: 36 }];
     XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
 
     // Sheet 2: Inventory

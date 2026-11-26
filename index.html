@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#1E3A5F">
-  <meta name="description" content="ApnaDukan — 100% Offline Bilingual (Hindi + English) Shop Stock Management & Billing PWA">
+  <meta name="description" content="ApnaDukan — Simple Offline Shop Stock Management & Billing PWA">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="ApnaDukan">
-  <title>ApnaDukan — Shop Stock &amp; Billing PWA</title>
+  <title>ApnaDukan — Shop Stock &amp; Billing</title>
 
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" type="image/svg+xml" href="./icons/logo.svg">
@@ -25,7 +25,7 @@
   <script defer src="./vendor/xlsx.full.min.js"></script>
   <script defer src="./vendor/fonts/mukta-fonts.js"></script>
 
-  <!-- App Modules (classic defer scripts for both PWA & file:// support) -->
+  <!-- App Modules -->
   <script defer src="./js/storage.js"></script>
   <script defer src="./js/pdf.js"></script>
   <script defer src="./js/export.js"></script>
@@ -46,132 +46,126 @@
       <nav class="sidebar-nav">
         <button type="button" class="sidebar-btn active" data-nav="dashboard">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
-          <span>डैशबोर्ड / Dashboard</span>
+          <span>Dashboard</span>
         </button>
         <button type="button" class="sidebar-btn" data-nav="inventory">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-          <span>स्टॉक / Inventory</span>
+          <span>Inventory</span>
           <span id="nav-stock-badge-desktop" class="nav-badge hidden">0</span>
         </button>
         <button type="button" class="sidebar-btn" data-nav="stock-in">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M8 5H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4"/></svg>
-          <span>माल जोड़ें / Stock In</span>
+          <span>Stock In</span>
         </button>
         <button type="button" class="sidebar-btn" data-nav="billing">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-          <span>बिल बनाएं / Create Bill</span>
+          <span>New Bill</span>
         </button>
         <button type="button" class="sidebar-btn" data-nav="history">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16l3-2 2 2 3-2 3 2 2-2 3 2V8z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg>
-          <span>बिल रिकॉर्ड / History</span>
+          <span>Bill History</span>
         </button>
         <button type="button" class="sidebar-btn" data-nav="settings">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          <span>सेटिंग्स / Settings</span>
+          <span>Settings</span>
         </button>
       </nav>
 
       <div class="sidebar-footer">
         <div>100% Offline • LocalStorage</div>
-        <div>ApnaDukan PWA v1.0</div>
+        <div>ApnaDukan PWA</div>
       </div>
     </aside>
 
     <!-- Main Area -->
     <div class="main-area">
-      <!-- Top Shop Header (Shop Logo stays strictly hidden if not uploaded!) -->
+      <!-- Top Header (Shop Logo stays strictly hidden if not uploaded) -->
       <header class="top-header">
         <div class="shop-brand">
           <img id="header-shop-logo" class="shop-logo-img hidden" alt="Shop Logo">
           <div class="shop-brand-text">
-            <h1 id="header-shop-name" class="shop-title">अपना दुकान (ApnaDukan)</h1>
+            <h1 id="header-shop-name" class="shop-title">ApnaDukan</h1>
             <p id="header-shop-subtitle" class="shop-subtitle hidden"></p>
           </div>
         </div>
 
         <div class="header-actions">
-          <button type="button" id="header-backup-btn" class="btn btn-sm header-backup-btn" title="JSON बैकअप तुरंत डाउनलोड करें / Download JSON Backup">
+          <button type="button" id="header-backup-btn" class="btn btn-sm header-backup-btn" title="Save JSON Backup">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span>Backup</span>
           </button>
           <button type="button" id="pwa-install-btn" class="btn btn-sm btn-primary hidden">
-            इंस्टॉल
+            Install
           </button>
-          <span id="network-status-pill" class="status-pill" title="Offline Ready Status">
+          <span id="network-status-pill" class="status-pill" title="Offline Ready">
             <span class="status-dot"></span>
-            <span id="network-status-text">ऑफलाइन रेडी</span>
+            <span id="network-status-text">Offline Ready</span>
           </span>
         </div>
       </header>
 
       <main class="content-wrap">
-        <!-- (B) DASHBOARD -->
+        <!-- DASHBOARD -->
         <section id="view-dashboard" class="view-section active" aria-label="Dashboard">
           <div class="page-head">
-            <div>
-              <h2 class="page-title">लाइव डैशबोर्ड / Live Dashboard</h2>
-              <p class="page-desc">दुकान के स्टॉक, बिक्री और मुनाफे का तुरंत हिसाब</p>
-            </div>
+            <h2 class="page-title">Dashboard</h2>
             <div class="action-group">
-              <button type="button" class="btn btn-primary" data-jump="billing">+ नया बिल / New Bill</button>
-              <button type="button" class="btn btn-outline" data-jump="stock-in">+ माल जोड़ें / Stock In</button>
+              <button type="button" class="btn btn-primary" data-jump="billing">+ New Bill</button>
+              <button type="button" class="btn btn-outline" data-jump="stock-in">+ Stock In</button>
             </div>
           </div>
 
           <div id="dashboard-low-alert-strip" class="alert-focus-banner hidden">
             <div>
-              <div id="dashboard-alert-title" class="alert-focus-text">⚠ ध्यान दें: कम स्टॉक अलर्ट!</div>
-              <div id="dashboard-alert-sub" class="alert-focus-sub">इन आइटम्स का माल जल्द मंगाएं</div>
+              <div id="dashboard-alert-title" class="alert-focus-text">Low stock alert</div>
+              <div id="dashboard-alert-sub" class="alert-focus-sub"></div>
             </div>
-            <button type="button" id="jump-low-stock-btn" class="btn btn-sm btn-danger-solid">कम स्टॉक देखें</button>
+            <button type="button" id="jump-low-stock-btn" class="btn btn-sm btn-danger-solid">View</button>
           </div>
 
-          <!-- Simple Sales & Profit Period Overview -->
+          <!-- Sales & Profit Period Card -->
           <div class="card period-summary-card">
             <div class="period-head">
-              <div>
-                <h3 class="card-title">बिक्री और मुनाफा रिपोर्ट / Sales &amp; Profit</h3>
-                <div class="page-desc">आज (Current), 1 महीना (30 दिन), 1 साल और कुल बिक्री/मुनाफा देखें</div>
-              </div>
+              <h3 class="card-title">Sales &amp; Profit</h3>
               <div id="sales-period-tabs" class="period-tabs" role="tablist" aria-label="Sales Period">
-                <button type="button" class="period-tab-btn" data-period="today">आज / Today</button>
-                <button type="button" class="period-tab-btn" data-period="month">1 महीना</button>
-                <button type="button" class="period-tab-btn" data-period="year">1 साल</button>
-                <button type="button" class="period-tab-btn active" data-period="all">कुल / Total</button>
+                <button type="button" class="period-tab-btn" data-period="today">Today</button>
+                <button type="button" class="period-tab-btn" data-period="month">1 Month</button>
+                <button type="button" class="period-tab-btn" data-period="year">1 Year</button>
+                <button type="button" class="period-tab-btn active" data-period="all">Total</button>
               </div>
             </div>
 
             <div class="period-mini-grid">
               <div class="period-mini-box" data-period-card="today">
                 <div class="period-mini-top">
-                  <span class="period-mini-label">आज / Today (Current)</span>
-                  <span id="p-today-bills" class="period-mini-bills">0 बिल</span>
+                  <span class="period-mini-label">Today</span>
+                  <span id="p-today-bills" class="period-mini-bills">0 bills</span>
                 </div>
                 <div class="period-mini-nums">
-                  <span>बिक्री: <strong id="p-today-sales" style="color: var(--navy);">₹0</strong></span>
-                  <span>मुनाफा: <strong id="p-today-profit" style="color: var(--teal-dark);">₹0</strong></span>
+                  <span>Sale: <strong id="p-today-sales" style="color: var(--navy);">₹0</strong></span>
+                  <span>Profit: <strong id="p-today-profit" style="color: var(--teal-dark);">₹0</strong></span>
                 </div>
               </div>
 
               <div class="period-mini-box" data-period-card="month">
                 <div class="period-mini-top">
-                  <span class="period-mini-label">1 महीना / Last 30 Days</span>
-                  <span id="p-month-bills" class="period-mini-bills">0 बिल</span>
+                  <span class="period-mini-label">1 Month (30d)</span>
+                  <span id="p-month-bills" class="period-mini-bills">0 bills</span>
                 </div>
                 <div class="period-mini-nums">
-                  <span>बिक्री: <strong id="p-month-sales" style="color: var(--navy);">₹0</strong></span>
-                  <span>मुनाफा: <strong id="p-month-profit" style="color: var(--teal-dark);">₹0</strong></span>
+                  <span>Sale: <strong id="p-month-sales" style="color: var(--navy);">₹0</strong></span>
+                  <span>Profit: <strong id="p-month-profit" style="color: var(--teal-dark);">₹0</strong></span>
                 </div>
               </div>
 
               <div class="period-mini-box active" data-period-card="all">
                 <div class="period-mini-top">
-                  <span class="period-mini-label">कुल / All Time Total</span>
-                  <span id="p-all-bills" class="period-mini-bills">0 बिल</span>
+                  <span class="period-mini-label">Total (All Time)</span>
+                  <span id="p-all-bills" class="period-mini-bills">0 bills</span>
                 </div>
                 <div class="period-mini-nums">
-                  <span>बिक्री: <strong id="p-all-sales" style="color: var(--navy);">₹0</strong></span>
-                  <span>मुनाफा: <strong id="p-all-profit" style="color: var(--teal-dark);">₹0</strong></span>
+                  <span>Sale: <strong id="p-all-sales" style="color: var(--navy);">₹0</strong></span>
+                  <span>Profit: <strong id="p-all-profit" style="color: var(--teal-dark);">₹0</strong></span>
                 </div>
               </div>
             </div>
@@ -179,63 +173,63 @@
 
           <div class="kpi-grid">
             <div class="kpi-card">
-              <div class="kpi-label">कुल आइटम / Total Products</div>
+              <div class="kpi-label">Products</div>
               <div id="kpi-total-products" class="kpi-value">0</div>
             </div>
             <div class="kpi-card teal">
-              <div class="kpi-label">कुल स्टॉक कीमत / Stock Value</div>
+              <div class="kpi-label">Stock Value</div>
               <div id="kpi-stock-value" class="kpi-value">₹0</div>
             </div>
             <div class="kpi-card success">
-              <div id="kpi-sales-label" class="kpi-label">कुल बिक्री / Total Sales</div>
+              <div id="kpi-sales-label" class="kpi-label">Total Sales</div>
               <div id="kpi-total-sales" class="kpi-value">₹0</div>
             </div>
             <div class="kpi-card teal">
-              <div id="kpi-profit-label" class="kpi-label">अनुमानित मुनाफा / Est. Profit</div>
+              <div id="kpi-profit-label" class="kpi-label">Est. Profit</div>
               <div id="kpi-est-profit" class="kpi-value">₹0</div>
             </div>
             <div class="kpi-card warning">
-              <div class="kpi-label">कम स्टॉक अलर्ट / Low Stock</div>
+              <div class="kpi-label">Low Stock</div>
               <div id="kpi-low-stock" class="kpi-value">0</div>
             </div>
             <div class="kpi-card danger">
-              <div class="kpi-label">खत्म आइटम / Out of Stock</div>
+              <div class="kpi-label">Out of Stock</div>
               <div id="kpi-out-stock" class="kpi-value">0</div>
             </div>
           </div>
 
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">स्टॉक लेवल चार्ट / Stock Level Chart</h3>
-              <span class="badge badge-navy">Top Items Current Stock</span>
+              <h3 class="card-title">Stock Level Chart</h3>
+              <span class="badge badge-navy">Top Items</span>
             </div>
             <div id="chart-empty-state" class="empty-state hidden">
-              चार्ट देखने के लिए Inventory में कम से कम 1 आइटम जोड़ें।
+              Add at least 1 product in Inventory to view chart.
             </div>
             <div id="chart-wrapper" class="chart-box">
               <canvas id="stock-chart"></canvas>
             </div>
           </div>
 
-          <!-- System 1: Low & Out of Stock Focus -->
+          <!-- Low & Out of Stock Focus -->
           <div id="dashboard-low-card" class="card card-low-focus">
             <div class="card-header">
               <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <h3 class="card-title" style="color: var(--danger-text);">⚠ कम और खत्म स्टॉक / Low &amp; Out of Stock</h3>
+                <h3 class="card-title" style="color: var(--danger-text);">Low &amp; Out of Stock</h3>
                 <span id="dashboard-low-badge" class="badge badge-danger">0</span>
               </div>
-              <button type="button" class="btn btn-sm btn-outline" id="dash-view-low-inv-btn">Inventory में देखें</button>
+              <button type="button" class="btn btn-sm btn-outline" id="dash-view-low-inv-btn">Open List</button>
             </div>
             <div class="table-wrap desktop-only-table">
               <table>
                 <thead>
                   <tr>
                     <th>Code</th>
-                    <th>आइटम / Item Name</th>
-                    <th>श्रेणी / Category</th>
-                    <th class="text-right">मौजूदा / Min Alert</th>
-                    <th class="text-right">बिक्री मूल्य / Sell</th>
-                    <th>स्टेटस / Status</th>
+                    <th>Item Name</th>
+                    <th>Category</th>
+                    <th class="text-right">Stock (Min)</th>
+                    <th class="text-right">Sell Price</th>
+                    <th>Status</th>
                     <th class="text-right">Action</th>
                   </tr>
                 </thead>
@@ -245,25 +239,25 @@
             <div id="dashboard-low-cards" class="mobile-card-list"></div>
           </div>
 
-          <!-- System 2: Full / Sufficient Stock -->
+          <!-- In Stock -->
           <div id="dashboard-full-card" class="card card-full-focus">
             <div class="card-header">
               <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <h3 class="card-title" style="color: var(--teal-dark);">✅ पूरा स्टॉक / Full Stock Items</h3>
+                <h3 class="card-title" style="color: var(--teal-dark);">In Stock</h3>
                 <span id="dashboard-full-badge" class="badge badge-success">0</span>
               </div>
-              <button type="button" class="btn btn-sm btn-outline" id="dash-view-full-inv-btn">सभी आइटम देखें</button>
+              <button type="button" class="btn btn-sm btn-outline" id="dash-view-full-inv-btn">Open List</button>
             </div>
             <div class="table-wrap desktop-only-table">
               <table>
                 <thead>
                   <tr>
                     <th>Code</th>
-                    <th>आइटम / Item Name</th>
-                    <th>श्रेणी / Category</th>
-                    <th class="text-right">मौजूदा स्टॉक / Stock</th>
-                    <th class="text-right">बिक्री मूल्य / Sell</th>
-                    <th>स्टेटस / Status</th>
+                    <th>Item Name</th>
+                    <th>Category</th>
+                    <th class="text-right">Stock</th>
+                    <th class="text-right">Sell Price</th>
+                    <th>Status</th>
                     <th class="text-right">Action</th>
                   </tr>
                 </thead>
@@ -274,62 +268,57 @@
           </div>
         </section>
 
-        <!-- (C) INVENTORY -->
+        <!-- INVENTORY -->
         <section id="view-inventory" class="view-section" aria-label="Inventory">
           <div class="page-head">
-            <div>
-              <h2 class="page-title">मास्टर स्टॉक लिस्ट / Inventory</h2>
-              <p class="page-desc">कम स्टॉक और पूरा स्टॉक अलग-अलग सिस्टम में देखें, एडिट और री-स्टॉक करें</p>
-            </div>
-            <button type="button" id="open-add-item-btn" class="btn btn-primary">+ नया आइटम / Add Item</button>
+            <h2 class="page-title">Inventory</h2>
+            <button type="button" id="open-add-item-btn" class="btn btn-primary">+ Add Item</button>
           </div>
 
           <div class="card">
-            <div id="inv-system-tabs" class="stock-system-tabs" role="tablist" aria-label="Stock System Switcher">
+            <div id="inv-system-tabs" class="stock-system-tabs" role="tablist" aria-label="Stock Filter">
               <button type="button" class="stock-sys-tab active" data-stock-system="all">
-                <span>दोनों / All</span>
+                <span>All</span>
               </button>
               <button type="button" class="stock-sys-tab" data-stock-system="low_out">
-                <span>⚠ कम/खत्म</span>
+                <span>Low / Out</span>
                 <span id="inv-low-tab-count" class="sys-pill-count">0</span>
               </button>
               <button type="button" class="stock-sys-tab" data-stock-system="full">
-                <span>✅ पूरा स्टॉक</span>
+                <span>In Stock</span>
                 <span id="inv-full-tab-count" class="sys-pill-count">0</span>
               </button>
             </div>
 
             <div class="filter-bar">
-              <input type="search" id="inv-search" class="form-control" placeholder="आइटम नाम या कोड खोजें / Search name or code...">
+              <input type="search" id="inv-search" class="form-control" placeholder="Search item name or code...">
               <select id="inv-category-filter" class="form-control">
-                <option value="all">सभी श्रेणी / All Categories</option>
+                <option value="all">All Categories</option>
               </select>
               <select id="inv-status-filter" class="form-control">
-                <option value="all">सभी स्टेटस / All Status</option>
-                <option value="low_out">कम और खत्म / Low &amp; Out</option>
-                <option value="in">पूरा स्टॉक / In Stock</option>
-                <option value="low">सिर्फ कम स्टॉक / Low Only</option>
-                <option value="out">सिर्फ खत्म / Out Only</option>
+                <option value="all">All Status</option>
+                <option value="low_out">Low &amp; Out</option>
+                <option value="in">In Stock</option>
+                <option value="low">Low Only</option>
+                <option value="out">Out Only</option>
               </select>
             </div>
           </div>
 
-          <!-- Inventory System 1: Low & Out Stock -->
           <div id="inv-low-section" class="card card-low-focus">
             <div class="card-header">
               <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <h3 class="card-title" style="color: var(--danger-text);">⚠ कम और खत्म स्टॉक / Low &amp; Out of Stock</h3>
+                <h3 class="card-title" style="color: var(--danger-text);">Low &amp; Out of Stock</h3>
                 <span id="inv-low-badge" class="badge badge-danger">0</span>
               </div>
-              <span class="page-desc">Min Alert स्तर से कम या खत्म आइटम</span>
             </div>
             <div class="table-wrap desktop-only-table">
               <table>
                 <thead>
                   <tr>
                     <th>Code</th>
-                    <th>आइटम / Item Name</th>
-                    <th>श्रेणी / Category</th>
+                    <th>Item Name</th>
+                    <th>Category</th>
                     <th>Unit</th>
                     <th class="text-right">Buy (₹)</th>
                     <th class="text-right">Sell (₹)</th>
@@ -348,22 +337,20 @@
             <div id="inv-low-cards" class="mobile-card-list"></div>
           </div>
 
-          <!-- Inventory System 2: Full Stock -->
           <div id="inv-full-section" class="card card-full-focus">
             <div class="card-header">
               <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <h3 class="card-title" style="color: var(--teal-dark);">✅ पूरा / पर्याप्त स्टॉक / Full Stock</h3>
+                <h3 class="card-title" style="color: var(--teal-dark);">In Stock</h3>
                 <span id="inv-full-badge" class="badge badge-success">0</span>
               </div>
-              <span class="page-desc">पर्याप्त मात्रा में उपलब्ध आइटम</span>
             </div>
             <div class="table-wrap desktop-only-table">
               <table>
                 <thead>
                   <tr>
                     <th>Code</th>
-                    <th>आइटम / Item Name</th>
-                    <th>श्रेणी / Category</th>
+                    <th>Item Name</th>
+                    <th>Category</th>
                     <th>Unit</th>
                     <th class="text-right">Buy (₹)</th>
                     <th class="text-right">Sell (₹)</th>
@@ -383,72 +370,69 @@
           </div>
         </section>
 
-        <!-- (D) STOCK IN -->
+        <!-- STOCK IN -->
         <section id="view-stock-in" class="view-section" aria-label="Stock In">
           <div class="page-head">
-            <div>
-              <h2 class="page-title">नया स्टॉक जोड़ें / Stock In</h2>
-              <p class="page-desc">नया माल आने पर एंट्री करें — स्टॉक अपने आप बढ़ जाएगा</p>
-            </div>
+            <h2 class="page-title">Stock In</h2>
           </div>
 
           <div class="card">
-            <h3 class="card-title" style="margin-bottom: 12px;">नई खरीद एंट्री / Add Stock Purchase</h3>
+            <h3 class="card-title" style="margin-bottom: 12px;">Add Stock</h3>
             <form id="stock-in-form">
               <div class="form-grid cols-2">
                 <div class="form-group">
-                  <label class="form-label" for="sin-date">तारीख / Date *</label>
+                  <label class="form-label" for="sin-date">Date *</label>
                   <input type="date" id="sin-date" class="form-control" required>
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="sin-supplier">सप्लायर का नाम / Supplier Name</label>
-                  <input type="text" id="sin-supplier" class="form-control" placeholder="जैसे: महावीर ट्रेडर्स">
+                  <label class="form-label" for="sin-supplier">Supplier Name</label>
+                  <input type="text" id="sin-supplier" class="form-control" placeholder="e.g. Mahavir Traders">
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="sin-item">आइटम चुनें / Select Item *</label>
+                  <label class="form-label" for="sin-item">Item *</label>
                   <select id="sin-item" class="form-control" required></select>
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="sin-qty">मात्रा जोड़ें / Quantity Added *</label>
+                  <label class="form-label" for="sin-qty">Quantity Added *</label>
                   <input type="number" id="sin-qty" class="form-control" inputmode="decimal" step="any" min="0.001" placeholder="0" required>
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="sin-rate">खरीद दर / Buy Rate (₹) *</label>
+                  <label class="form-label" for="sin-rate">Buy Rate (₹) *</label>
                   <input type="number" id="sin-rate" class="form-control" inputmode="decimal" step="any" min="0" placeholder="0" required>
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="sin-total">कुल लागत / Total Cost (₹)</label>
+                  <label class="form-label" for="sin-total">Total Cost (₹)</label>
                   <input type="text" id="sin-total" class="form-control tabular" value="₹0" readonly>
                 </div>
               </div>
 
               <div class="form-group" style="margin-top: 12px;">
-                <label class="form-label" for="sin-notes">नोट्स / Notes</label>
-                <input type="text" id="sin-notes" class="form-control" placeholder="बिल नंबर या कोई अतिरिक्त जानकारी (वैकल्पिक)">
+                <label class="form-label" for="sin-notes">Notes</label>
+                <input type="text" id="sin-notes" class="form-control" placeholder="Optional invoice or batch note">
               </div>
 
               <div style="margin-top: 12px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;">
                 <label class="checkbox-row">
                   <input type="checkbox" id="sin-update-buy-price">
-                  <span>आइटम का Buy Price भी इस दर से अपडेट करें</span>
+                  <span>Update item Buy Price</span>
                 </label>
-                <button type="submit" class="btn btn-primary">स्टॉक सेव करें / Save Stock In</button>
+                <button type="submit" class="btn btn-primary">Save Stock In</button>
               </div>
             </form>
           </div>
 
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">Stock In हिस्ट्री / Purchase History</h3>
-              <input type="search" id="sin-search" class="form-control" style="max-width: 280px;" placeholder="आइटम या सप्लायर खोजें...">
+              <h3 class="card-title">Stock In History</h3>
+              <input type="search" id="sin-search" class="form-control" style="max-width: 260px;" placeholder="Search item or supplier...">
             </div>
             <div class="table-wrap desktop-only-table">
               <table>
                 <thead>
                   <tr>
-                    <th>तारीख / Date</th>
-                    <th>सप्लायर / Supplier</th>
-                    <th>आइटम / Item</th>
+                    <th>Date</th>
+                    <th>Supplier</th>
+                    <th>Item</th>
                     <th class="text-right">Qty</th>
                     <th class="text-right">Rate (₹)</th>
                     <th class="text-right">Total Cost (₹)</th>
@@ -463,40 +447,37 @@
           </div>
         </section>
 
-        <!-- (E) CREATE BILL / INVOICE -->
-        <section id="view-billing" class="view-section" aria-label="Create Bill">
+        <!-- CREATE BILL -->
+        <section id="view-billing" class="view-section" aria-label="New Bill">
           <div class="page-head">
-            <div>
-              <h2 class="page-title">नया बिल बनाएं / Create Bill (Invoice)</h2>
-              <p class="page-desc">बिल सेव करते ही स्टॉक ऑटो-कट जाएगा और A4 PDF डाउनलोड होगा</p>
-            </div>
+            <h2 class="page-title">New Bill</h2>
           </div>
 
           <form id="bill-form" class="card">
             <div class="form-grid cols-2">
               <div class="form-group">
-                <label class="form-label" for="bill-no">बिल नंबर / Bill No *</label>
+                <label class="form-label" for="bill-no">Bill No *</label>
                 <input type="text" id="bill-no" class="form-control" required>
               </div>
               <div class="form-group">
-                <label class="form-label" for="bill-date">तारीख / Date *</label>
+                <label class="form-label" for="bill-date">Date *</label>
                 <input type="date" id="bill-date" class="form-control" required>
               </div>
               <div class="form-group">
-                <label class="form-label" for="bill-customer">ग्राहक का नाम / Customer Name</label>
+                <label class="form-label" for="bill-customer">Customer Name</label>
                 <input type="text" id="bill-customer" class="form-control" placeholder="Walk-in Customer">
               </div>
               <div class="form-group">
-                <label class="form-label" for="bill-phone">मोबाइल नंबर / Customer Phone (वैकल्पिक)</label>
-                <input type="tel" id="bill-phone" class="form-control" placeholder="10-digit mobile number">
+                <label class="form-label" for="bill-phone">Customer Phone</label>
+                <input type="tel" id="bill-phone" class="form-control" inputmode="tel" placeholder="Optional mobile number">
               </div>
               <div class="form-group">
-                <label class="form-label" for="bill-payment-mode">पेमेंट मोड / Payment Mode *</label>
+                <label class="form-label" for="bill-payment-mode">Payment Mode *</label>
                 <select id="bill-payment-mode" class="form-control">
-                  <option value="Cash">Cash (नकद)</option>
-                  <option value="UPI">UPI (ऑनलाइन)</option>
-                  <option value="Card">Card (कार्ड)</option>
-                  <option value="Udhar">Udhar (उधार)</option>
+                  <option value="Cash">Cash</option>
+                  <option value="UPI">UPI</option>
+                  <option value="Card">Card</option>
+                  <option value="Udhar">Udhar</option>
                 </select>
               </div>
             </div>
@@ -504,48 +485,45 @@
             <hr class="divider">
 
             <div class="card-header">
-              <h3 class="card-title">बिल आइटम्स / Bill Items</h3>
-              <button type="button" id="add-bill-row-btn" class="btn btn-sm btn-navy">+ आइटम जोड़ें / Add Item Row</button>
+              <h3 class="card-title">Items</h3>
+              <button type="button" id="add-bill-row-btn" class="btn btn-sm btn-navy">+ Add Item</button>
             </div>
 
             <div id="bill-rows-container" class="bill-rows-list"></div>
 
             <div class="bill-summary-box">
               <div class="summary-line">
-                <span>Sub Total (उप-योग):</span>
+                <span>Sub Total:</span>
                 <strong id="bill-subtotal" class="tabular">₹0</strong>
               </div>
               <div class="summary-line">
-                <label for="bill-discount">Discount / छूट (₹):</label>
+                <label for="bill-discount">Discount (₹):</label>
                 <input type="number" id="bill-discount" class="form-control tabular" inputmode="decimal" style="width: 130px; min-height: 36px; text-align: right;" min="0" step="any" value="0">
               </div>
               <div class="summary-line grand">
-                <span>Grand Total (कुल राशि):</span>
+                <span>Grand Total:</span>
                 <span id="bill-grand-total" class="tabular">₹0</span>
               </div>
             </div>
 
             <div class="bill-form-actions">
-              <button type="button" id="reset-bill-btn" class="btn btn-outline">रीसेट / Clear Form</button>
-              <button type="submit" class="btn btn-primary">Save &amp; Download PDF Bill</button>
+              <button type="button" id="reset-bill-btn" class="btn btn-outline">Clear</button>
+              <button type="submit" class="btn btn-primary">Save &amp; Download PDF</button>
             </div>
           </form>
         </section>
 
-        <!-- (F) BILL HISTORY -->
+        <!-- BILL HISTORY -->
         <section id="view-history" class="view-section" aria-label="Bill History">
           <div class="page-head">
-            <div>
-              <h2 class="page-title">बिल का रिकॉर्ड / Bill History</h2>
-              <p class="page-desc">पुराने बिल देखें, डुप्लीकेट PDF डाउनलोड करें या स्टॉक के साथ डिलीट करें</p>
-            </div>
+            <h2 class="page-title">Bill History</h2>
           </div>
 
           <div class="card">
             <div class="filter-bar filter-bar-2">
-              <input type="search" id="history-search" class="form-control" placeholder="Bill No या ग्राहक के नाम से खोजें / Search Bill No or Customer...">
+              <input type="search" id="history-search" class="form-control" placeholder="Search Bill No or Customer...">
               <select id="history-payment-filter" class="form-control">
-                <option value="all">सभी पेमेंट मोड / All Modes</option>
+                <option value="all">All Modes</option>
                 <option value="Cash">Cash</option>
                 <option value="UPI">UPI</option>
                 <option value="Card">Card</option>
@@ -558,8 +536,8 @@
                 <thead>
                   <tr>
                     <th>Bill No</th>
-                    <th>तारीख / Date</th>
-                    <th>ग्राहक / Customer</th>
+                    <th>Date</th>
+                    <th>Customer</th>
                     <th class="text-center">Items</th>
                     <th class="text-right">Grand Total (₹)</th>
                     <th>Payment</th>
@@ -573,98 +551,95 @@
           </div>
         </section>
 
-        <!-- (A & G) SETTINGS & BACKUP -->
+        <!-- SETTINGS & BACKUP -->
         <section id="view-settings" class="view-section" aria-label="Settings and Backup">
           <div class="page-head">
-            <div>
-              <h2 class="page-title">बैकअप और दुकान की सेटिंग्स / Backup &amp; Settings</h2>
-              <p class="page-desc">JSON/Excel बैकअप, दुकान का विवरण, लोगो और PWA ऐप सेटिंग्स</p>
-            </div>
+            <h2 class="page-title">Settings &amp; Backup</h2>
           </div>
 
           <div class="card">
-            <h3 class="card-title" style="margin-bottom: 12px;">(G) बैकअप, एक्सपोर्ट और इम्पोर्ट / Backup, Export &amp; Import</h3>
+            <h3 class="card-title" style="margin-bottom: 12px;">Backup, Export &amp; Import</h3>
             <div class="backup-grid">
               <div class="backup-box">
                 <div>
-                  <strong style="color: var(--navy);">Export to JSON (Full Backup)</strong>
-                  <p class="page-desc">दुकान सेटिंग्स, लोगो, स्टॉक, खरीद और बिलों का पूरा बैकअप (.json) डाउनलोड करें।</p>
+                  <strong style="color: var(--navy);">JSON Backup</strong>
+                  <p class="page-desc">Save all settings, logo, stock, and bills as a `.json` file.</p>
                 </div>
-                <button type="button" id="export-json-btn" class="btn btn-navy">JSON बैकअप डाउनलोड</button>
+                <button type="button" id="export-json-btn" class="btn btn-navy">Download JSON</button>
               </div>
 
               <div class="backup-box">
                 <div>
-                  <strong style="color: var(--navy);">Import from JSON (Full Restore)</strong>
-                  <p class="page-desc">पहले से सेव की गई .json बैकअप फाइल से पूरा डेटा वापस रिस्टोर करें।</p>
+                  <strong style="color: var(--navy);">Restore Backup</strong>
+                  <p class="page-desc">Restore your full shop data from a saved `.json` file.</p>
                 </div>
                 <input type="file" id="import-json-input" accept=".json,application/json" class="hidden">
-                <button type="button" id="import-json-btn" class="btn btn-outline">JSON फाइल इम्पोर्ट करें</button>
+                <button type="button" id="import-json-btn" class="btn btn-outline">Import JSON</button>
               </div>
 
               <div class="backup-box">
                 <div>
-                  <strong style="color: var(--navy);">Export to Excel (.xlsx)</strong>
-                  <p class="page-desc">4 शीट (Summary, Inventory, Stock In, Bill History) वाली Excel रिपोर्ट पाएं।</p>
+                  <strong style="color: var(--navy);">Excel Report (.xlsx)</strong>
+                  <p class="page-desc">Download 4-sheet report (Summary, Inventory, Stock In, Bills).</p>
                 </div>
-                <button type="button" id="export-excel-btn" class="btn btn-primary">Excel (.xlsx) डाउनलोड</button>
+                <button type="button" id="export-excel-btn" class="btn btn-primary">Download Excel</button>
               </div>
             </div>
           </div>
 
           <div class="card">
-            <h3 class="card-title" style="margin-bottom: 12px;">(A) दुकान की सेटिंग्स / Shop Settings &amp; Logo</h3>
+            <h3 class="card-title" style="margin-bottom: 12px;">Shop Settings &amp; Logo</h3>
             <form id="settings-form">
               <div class="form-grid cols-2">
                 <div class="form-group">
-                  <label class="form-label" for="set-shop-name">दुकान का नाम / Shop Name *</label>
+                  <label class="form-label" for="set-shop-name">Shop Name *</label>
                   <input type="text" id="set-shop-name" class="form-control" required>
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="set-phone">मोबाइल नंबर / Mobile Number</label>
-                  <input type="tel" id="set-phone" class="form-control" placeholder="जैसे: 9876543210">
+                  <label class="form-label" for="set-phone">Mobile Number</label>
+                  <input type="tel" id="set-phone" class="form-control" inputmode="tel" placeholder="e.g. 9876543210">
                 </div>
               </div>
 
               <div class="form-group" style="margin-top: 12px;">
-                <label class="form-label" for="set-address">पता / Address</label>
-                <input type="text" id="set-address" class="form-control" placeholder="दुकान का पूरा पता">
+                <label class="form-label" for="set-address">Address</label>
+                <input type="text" id="set-address" class="form-control" placeholder="Shop address">
               </div>
 
               <div class="form-group" style="margin-top: 12px;">
-                <label class="form-label" for="set-footer-note">बिल फुटर नोट / Bill Footer Note</label>
-                <input type="text" id="set-footer-note" class="form-control" placeholder="धन्यवाद! फिर पधारें | Thank you! Visit again.">
+                <label class="form-label" for="set-footer-note">Bill Footer Note</label>
+                <input type="text" id="set-footer-note" class="form-control" placeholder="Thank you! Visit again.">
               </div>
 
               <div class="form-group" style="margin-top: 14px;">
-                <label class="form-label">दुकान का लोगो / Shop Logo (Optional — खाली होने पर हेडर व PDF में छुपा रहेगा)</label>
+                <label class="form-label">Shop Logo (Optional — hidden in header &amp; PDF if none)</label>
                 <div class="logo-upload-area">
                   <img id="set-logo-preview" class="logo-preview-img hidden" alt="Shop Logo Preview">
                   <input type="file" id="set-logo-input" accept="image/*" class="hidden">
-                  <button type="button" id="set-logo-upload-btn" class="btn btn-outline">लोगो चुनें / Upload Logo</button>
-                  <button type="button" id="set-logo-remove-btn" class="btn btn-danger hidden">लोगो हटाएं / Remove Logo</button>
+                  <button type="button" id="set-logo-upload-btn" class="btn btn-outline">Upload Logo</button>
+                  <button type="button" id="set-logo-remove-btn" class="btn btn-danger hidden">Remove Logo</button>
                 </div>
               </div>
 
               <div style="margin-top: 16px; display: flex; justify-content: flex-end;">
-                <button type="submit" class="btn btn-primary">सेटिंग्स सेव करें / Save Settings</button>
+                <button type="submit" class="btn btn-primary">Save Settings</button>
               </div>
             </form>
           </div>
 
           <div class="card">
-            <h3 class="card-title" style="margin-bottom: 12px;">ApnaDukan PWA &amp; Data Management</h3>
+            <h3 class="card-title" style="margin-bottom: 12px;">App Info &amp; Reset</h3>
             <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px;">
               <div style="display: flex; align-items: center; gap: 12px;">
-                <img src="./icons/logo.svg" alt="ApnaDukan App Icon" style="width: 48px; height: 48px; border-radius: 12px;">
+                <img src="./icons/logo.svg" alt="ApnaDukan App Icon" style="width: 44px; height: 44px; border-radius: 10px;">
                 <div>
-                  <div style="font-weight: 700; color: var(--navy);">ApnaDukan Offline Billing PWA</div>
-                  <div id="pwa-status-detail" class="page-desc">100% Browser LocalStorage • Offline Ready</div>
+                  <div style="font-weight: 700; color: var(--navy);">ApnaDukan Offline PWA</div>
+                  <div id="pwa-status-detail" class="page-desc">LocalStorage • Offline Ready</div>
                 </div>
               </div>
               <div class="action-group">
-                <button type="button" id="settings-install-btn" class="btn btn-primary hidden">ऐप इंस्टॉल करें / Install PWA</button>
-                <button type="button" id="open-reset-modal-btn" class="btn btn-danger">Clear All / Reset Data</button>
+                <button type="button" id="settings-install-btn" class="btn btn-primary hidden">Install App</button>
+                <button type="button" id="open-reset-modal-btn" class="btn btn-danger">Reset Data</button>
               </div>
             </div>
           </div>
@@ -678,38 +653,38 @@
         <span class="bottom-nav-icon-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
         </span>
-        <span>डैशबोर्ड</span>
+        <span>Home</span>
       </button>
       <button type="button" class="bottom-nav-btn" data-nav="inventory">
         <span class="bottom-nav-icon-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
           <span id="nav-stock-badge-mobile" class="nav-badge-dot hidden">0</span>
         </span>
-        <span>स्टॉक</span>
+        <span>Stock</span>
       </button>
       <button type="button" class="bottom-nav-btn" data-nav="stock-in">
         <span class="bottom-nav-icon-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M8 5H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4"/></svg>
         </span>
-        <span>माल जोड़ें</span>
+        <span>Stock In</span>
       </button>
       <button type="button" class="bottom-nav-btn" data-nav="billing">
         <span class="bottom-nav-icon-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
         </span>
-        <span>बिल</span>
+        <span>Bill</span>
       </button>
       <button type="button" class="bottom-nav-btn" data-nav="history">
         <span class="bottom-nav-icon-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16l3-2 2 2 3-2 3 2 2-2 3 2V8z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg>
         </span>
-        <span>रिकॉर्ड</span>
+        <span>History</span>
       </button>
       <button type="button" class="bottom-nav-btn" data-nav="settings">
         <span class="bottom-nav-icon-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </span>
-        <span>सेटिंग्स</span>
+        <span>Settings</span>
       </button>
     </nav>
   </div>
@@ -718,7 +693,7 @@
   <div id="item-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="item-modal-title">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 id="item-modal-title" class="modal-title">नया आइटम जोड़ें / Add Item</h3>
+        <h3 id="item-modal-title" class="modal-title">Add Item</h3>
         <button type="button" class="modal-close" data-close-modal="item-modal" aria-label="Close">&times;</button>
       </div>
       <form id="item-form">
@@ -730,7 +705,7 @@
               <input type="text" id="item-code" class="form-control" required placeholder="ITM-106">
             </div>
             <div class="form-group">
-              <label class="form-label" for="item-unit">इकाई / Unit *</label>
+              <label class="form-label" for="item-unit">Unit *</label>
               <select id="item-unit" class="form-control">
                 <option value="Pcs">Pcs</option>
                 <option value="Packet">Packet</option>
@@ -747,47 +722,47 @@
           </div>
 
           <div class="form-group" style="margin-top: 12px;">
-            <label class="form-label" for="item-name">आइटम का नाम / Item Name *</label>
-            <input type="text" id="item-name" class="form-control" required placeholder="जैसे: Tata Tea Gold 250g">
+            <label class="form-label" for="item-name">Item Name *</label>
+            <input type="text" id="item-name" class="form-control" required placeholder="e.g. Tata Tea Gold 250g">
           </div>
 
           <div class="form-group" style="margin-top: 12px;">
-            <label class="form-label" for="item-category">श्रेणी / Category *</label>
-            <input type="text" id="item-category" list="category-suggestions" class="form-control" required placeholder="किराना / Grocery">
+            <label class="form-label" for="item-category">Category *</label>
+            <input type="text" id="item-category" list="category-suggestions" class="form-control" required placeholder="Grocery">
             <datalist id="category-suggestions">
-              <option value="किराना / Grocery">
-              <option value="डेयरी / Dairy">
-              <option value="तेल व घी / Oil & Ghee">
-              <option value="बिस्कुट / Snacks">
-              <option value="पेय पदार्थ / Beverages">
-              <option value="पर्सनल केयर / Personal Care">
-              <option value="स्टेशनरी / Stationery">
-              <option value="अन्य / Other">
+              <option value="Grocery">
+              <option value="Dairy">
+              <option value="Oil & Ghee">
+              <option value="Snacks">
+              <option value="Beverages">
+              <option value="Personal Care">
+              <option value="Stationery">
+              <option value="Other">
             </datalist>
           </div>
 
           <div class="form-grid cols-2" style="margin-top: 12px;">
             <div class="form-group">
-              <label class="form-label" for="item-buy-price">खरीद मूल्य / Buy Price (₹) *</label>
+              <label class="form-label" for="item-buy-price">Buy Price (₹) *</label>
               <input type="number" id="item-buy-price" class="form-control" inputmode="decimal" step="any" min="0" required value="0">
             </div>
             <div class="form-group">
-              <label class="form-label" for="item-sell-price">बिक्री मूल्य / Sell Price (₹) *</label>
+              <label class="form-label" for="item-sell-price">Sell Price (₹) *</label>
               <input type="number" id="item-sell-price" class="form-control" inputmode="decimal" step="any" min="0" required value="0">
             </div>
             <div class="form-group">
-              <label class="form-label" for="item-opening-stock">शुरुआती स्टॉक / Opening Stock *</label>
+              <label class="form-label" for="item-opening-stock">Opening Stock *</label>
               <input type="number" id="item-opening-stock" class="form-control" inputmode="decimal" step="any" min="0" required value="0">
             </div>
             <div class="form-group">
-              <label class="form-label" for="item-min-alert">न्यूनतम अलर्ट / Min Alert Level *</label>
+              <label class="form-label" for="item-min-alert">Min Alert Level *</label>
               <input type="number" id="item-min-alert" class="form-control" inputmode="decimal" step="any" min="0" required value="5">
             </div>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline" data-close-modal="item-modal">रद्द करें / Cancel</button>
-          <button type="submit" class="btn btn-primary">आइटम सेव करें / Save Item</button>
+          <button type="button" class="btn btn-outline" data-close-modal="item-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Item</button>
         </div>
       </form>
     </div>
@@ -797,14 +772,14 @@
   <div id="bill-view-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="bill-view-title">
     <div class="modal-dialog modal-lg">
       <div class="modal-header">
-        <h3 id="bill-view-title" class="modal-title">बिल विवरण / Invoice Preview</h3>
+        <h3 id="bill-view-title" class="modal-title">Invoice Preview</h3>
         <button type="button" class="modal-close" data-close-modal="bill-view-modal" aria-label="Close">&times;</button>
       </div>
       <div class="modal-body">
         <div id="bill-view-content" class="invoice-preview"></div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-outline" data-close-modal="bill-view-modal">बंद करें / Close</button>
+        <button type="button" class="btn btn-outline" data-close-modal="bill-view-modal">Close</button>
         <button type="button" id="bill-view-download-pdf" class="btn btn-primary">Download PDF</button>
       </div>
     </div>
@@ -814,19 +789,19 @@
   <div id="delete-bill-modal" class="modal-backdrop" role="dialog" aria-modal="true">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 class="modal-title">बिल डिलीट करें / Delete Bill</h3>
+        <h3 class="modal-title">Delete Bill</h3>
         <button type="button" class="modal-close" data-close-modal="delete-bill-modal" aria-label="Close">&times;</button>
       </div>
       <div class="modal-body">
-        <p id="delete-bill-msg" style="margin-top: 0;">क्या आप वाकई यह बिल डिलीट करना चाहते हैं?</p>
+        <p id="delete-bill-msg" style="margin-top: 0;">Are you sure you want to delete this bill?</p>
         <label class="checkbox-row">
           <input type="checkbox" id="delete-bill-restore-stock" checked>
-          <span>कटा हुआ स्टॉक वापस Inventory में जोड़ें / Restore deducted stock to Inventory</span>
+          <span>Restore deducted stock to Inventory</span>
         </label>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-outline" data-close-modal="delete-bill-modal">नहीं / Cancel</button>
-        <button type="button" id="confirm-delete-bill-btn" class="btn btn-danger-solid">हाँ, डिलीट करें / Delete</button>
+        <button type="button" class="btn btn-outline" data-close-modal="delete-bill-modal">Cancel</button>
+        <button type="button" id="confirm-delete-bill-btn" class="btn btn-danger-solid">Delete</button>
       </div>
     </div>
   </div>
@@ -835,16 +810,16 @@
   <div id="import-confirm-modal" class="modal-backdrop" role="dialog" aria-modal="true">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 class="modal-title">बैकअप रिस्टोर कन्फर्मेशन / Confirm Restore</h3>
+        <h3 class="modal-title">Confirm Restore</h3>
         <button type="button" class="modal-close" data-close-modal="import-confirm-modal" aria-label="Close">&times;</button>
       </div>
       <div class="modal-body">
-        <p style="margin-top: 0;">इस बैकअप को रिस्टोर करने से मौजूदा सारा डेटा बदल जाएगा। बैकअप विवरण:</p>
+        <p style="margin-top: 0;">Restoring this backup will replace current data. Backup summary:</p>
         <div id="import-summary-box" style="background: #F8FAFC; border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-size: 0.9rem;"></div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-outline" data-close-modal="import-confirm-modal">रद्द करें / Cancel</button>
-        <button type="button" id="confirm-import-btn" class="btn btn-primary">रिस्टोर करें / Confirm Restore</button>
+        <button type="button" class="btn btn-outline" data-close-modal="import-confirm-modal">Cancel</button>
+        <button type="button" id="confirm-import-btn" class="btn btn-primary">Restore Backup</button>
       </div>
     </div>
   </div>
@@ -853,15 +828,15 @@
   <div id="confirm-modal" class="modal-backdrop" role="dialog" aria-modal="true">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 id="confirm-modal-title" class="modal-title">पुष्टि करें / Confirm</h3>
+        <h3 id="confirm-modal-title" class="modal-title">Confirm</h3>
         <button type="button" class="modal-close" data-close-modal="confirm-modal" aria-label="Close">&times;</button>
       </div>
       <div class="modal-body">
         <p id="confirm-modal-message" style="margin: 0;"></p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-outline" data-close-modal="confirm-modal">रद्द करें / Cancel</button>
-        <button type="button" id="confirm-modal-ok-btn" class="btn btn-primary">हाँ / Confirm</button>
+        <button type="button" class="btn btn-outline" data-close-modal="confirm-modal">Cancel</button>
+        <button type="button" id="confirm-modal-ok-btn" class="btn btn-primary">Confirm</button>
       </div>
     </div>
   </div>
@@ -870,26 +845,26 @@
   <div id="reset-modal" class="modal-backdrop" role="dialog" aria-modal="true">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 class="modal-title">डेटा रीसेट / Clear All Data</h3>
+        <h3 class="modal-title">Reset Data</h3>
         <button type="button" class="modal-close" data-close-modal="reset-modal" aria-label="Close">&times;</button>
       </div>
       <div class="modal-body">
-        <p style="margin-top: 0;">कृपया चुनें कि आप डेटा कैसे रीसेट करना चाहते हैं (रीसेट से पहले JSON बैकअप डाउनलोड करना बेहतर रहेगा):</p>
+        <p style="margin-top: 0;">Choose how to reset your data (download a JSON backup first if needed):</p>
         <label class="checkbox-row" style="margin-bottom: 14px;">
           <input type="checkbox" id="reset-keep-settings" checked>
-          <span>दुकान की सेटिंग्स और लोगो सुरक्षित रखें / Keep Shop Settings &amp; Logo</span>
+          <span>Keep Shop Settings &amp; Logo</span>
         </label>
         <div style="display: flex; flex-direction: column; gap: 10px;">
           <button type="button" id="reset-blank-btn" class="btn btn-danger-solid">
-            सब कुछ खाली करें (Start Blank — 0 Items &amp; 0 Bills)
+            Clear All (Start Blank — 0 Items &amp; 0 Bills)
           </button>
           <button type="button" id="reset-sample-btn" class="btn btn-outline">
-            5 सैंपल आइटम्स वापस लोड करें (Load Sample Data)
+            Load 5 Sample Items
           </button>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-outline" data-close-modal="reset-modal">बंद करें / Close</button>
+        <button type="button" class="btn btn-outline" data-close-modal="reset-modal">Close</button>
       </div>
     </div>
   </div>

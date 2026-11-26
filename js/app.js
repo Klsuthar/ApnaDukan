@@ -63,7 +63,7 @@
     document.getElementById('confirm-modal-title').textContent = title;
     document.getElementById('confirm-modal-message').textContent = message;
     const okBtn = document.getElementById('confirm-modal-ok-btn');
-    okBtn.textContent = okLabel || 'हाँ / Confirm';
+    okBtn.textContent = okLabel || 'Confirm';
     okBtn.className = 'btn ' + (okClass || 'btn-primary');
     pendingConfirmCallback = callback;
     openModal('confirm-modal');
@@ -72,7 +72,7 @@
   function persistAndRefresh() {
     const saved = Storage.saveState(state);
     if (!saved) {
-      showToast('स्टोरेज भर गया है! कृपया छोटा लोगो उपयोग करें या पुराना डेटा बैकअप लें।', 'error');
+      showToast('Storage is full. Use a smaller logo or export a backup.', 'error');
     }
     renderAll();
   }
@@ -95,7 +95,7 @@
   // =========================================================
   function renderHeader() {
     const { shopName, address, phone, logo } = state.settings;
-    document.getElementById('header-shop-name').textContent = shopName || 'अपना दुकान (ApnaDukan)';
+    document.getElementById('header-shop-name').textContent = shopName || 'ApnaDukan';
 
     const parts = [];
     if (address) parts.push(address);
@@ -109,7 +109,7 @@
       subEl.classList.add('hidden');
     }
 
-    // Rule A: strictly hide logo element if no logo uploaded
+    // Strictly hide shop logo element if no logo uploaded
     const logoImg = document.getElementById('header-shop-logo');
     if (logo && logo.startsWith('data:image/')) {
       logoImg.src = logo;
@@ -198,6 +198,43 @@
   // =========================================================
   // (B) DASHBOARD
   // =========================================================
+  const PERIOD_LABELS = {
+    today: { sales: 'Today Sales', profit: 'Today Profit' },
+    month: { sales: '1 Month Sales', profit: '1 Month Profit' },
+    year: { sales: '1 Year Sales', profit: '1 Year Profit' },
+    all: { sales: 'Total Sales', profit: 'Est. Profit' }
+  };
+
+  function setSalesPeriod(period) {
+    activeSalesPeriod = PERIOD_LABELS[period] ? period : 'all';
+    document.querySelectorAll('.period-tab-btn').forEach((btn) => {
+      btn.classList.toggle('active', btn.getAttribute('data-period') === activeSalesPeriod);
+    });
+    document.querySelectorAll('[data-period-card]').forEach((card) => {
+      card.classList.toggle('active', card.getAttribute('data-period-card') === activeSalesPeriod);
+    });
+    renderDashboardSalesKPIs();
+  }
+
+  function renderDashboardSalesKPIs() {
+    const summary = Storage.computePeriodSummary(state);
+    const activeData = summary[activeSalesPeriod] || summary.all;
+    const labels = PERIOD_LABELS[activeSalesPeriod] || PERIOD_LABELS.all;
+
+    document.getElementById('kpi-sales-label').textContent = labels.sales;
+    document.getElementById('kpi-profit-label').textContent = labels.profit;
+    document.getElementById('kpi-total-sales').textContent = Storage.formatINR(activeData.totalSales);
+    document.getElementById('kpi-est-profit').textContent = Storage.formatINR(activeData.estProfit);
+
+    ['today', 'month', 'all'].forEach((key) => {
+      const data = summary[key];
+      const count = data.billCount;
+      document.getElementById(`p-${key}-sales`).textContent = Storage.formatINR(data.totalSales);
+      document.getElementById(`p-${key}-profit`).textContent = Storage.formatINR(data.estProfit);
+      document.getElementById(`p-${key}-bills`).textContent = `${count} ${count === 1 ? 'bill' : 'bills'}`;
+    });
+  }
+
   function buildDashboardRowHtml(item, showMinAlert) {
     const current = Storage.getCurrentStock(item);
     const st = Storage.getStockStatus(item);
@@ -234,55 +271,19 @@
         </div>
         <div class="m-card-stats" style="grid-template-columns: repeat(2, 1fr);">
           <div>
-            <div class="m-stat-label">मौजूदा स्टॉक / Stock</div>
+            <div class="m-stat-label">Stock</div>
             <div class="m-stat-val">${Storage.formatQty(current)} ${escapeHtml(item.unit)}</div>
           </div>
           <div>
-            <div class="m-stat-label">बिक्री मूल्य / Sell Price</div>
+            <div class="m-stat-label">Sell Price</div>
             <div class="m-stat-val">${Storage.formatINR(item.sellPrice)}</div>
           </div>
         </div>
         <div class="m-card-actions">
-          <button type="button" class="btn btn-sm ${isUrgent ? 'btn-primary' : 'btn-outline'} quick-stock-in-btn" data-item-id="${escapeHtml(item.id)}">+ माल जोड़ें / Stock In</button>
+          <button type="button" class="btn btn-sm ${isUrgent ? 'btn-primary' : 'btn-outline'} quick-stock-in-btn" data-item-id="${escapeHtml(item.id)}">+ Add Stock</button>
         </div>
       </div>
     `;
-  }
-
-  const PERIOD_LABELS = {
-    today: { sales: 'आज की बिक्री / Today Sales', profit: 'आज का मुनाफा / Today Profit' },
-    month: { sales: '1 महीने की बिक्री / 30d Sales', profit: '1 महीने का मुनाफा / 30d Profit' },
-    year: { sales: '1 साल की बिक्री / 1y Sales', profit: '1 साल का मुनाफा / 1y Profit' },
-    all: { sales: 'कुल बिक्री / Total Sales', profit: 'कुल मुनाफा / Est. Profit' }
-  };
-
-  function setSalesPeriod(period) {
-    activeSalesPeriod = PERIOD_LABELS[period] ? period : 'all';
-    document.querySelectorAll('.period-tab-btn').forEach((btn) => {
-      btn.classList.toggle('active', btn.getAttribute('data-period') === activeSalesPeriod);
-    });
-    document.querySelectorAll('[data-period-card]').forEach((card) => {
-      card.classList.toggle('active', card.getAttribute('data-period-card') === activeSalesPeriod);
-    });
-    renderDashboardSalesKPIs();
-  }
-
-  function renderDashboardSalesKPIs() {
-    const summary = Storage.computePeriodSummary(state);
-    const activeData = summary[activeSalesPeriod] || summary.all;
-    const labels = PERIOD_LABELS[activeSalesPeriod] || PERIOD_LABELS.all;
-
-    document.getElementById('kpi-sales-label').textContent = labels.sales;
-    document.getElementById('kpi-profit-label').textContent = labels.profit;
-    document.getElementById('kpi-total-sales').textContent = Storage.formatINR(activeData.totalSales);
-    document.getElementById('kpi-est-profit').textContent = Storage.formatINR(activeData.estProfit);
-
-    ['today', 'month', 'all'].forEach((key) => {
-      const data = summary[key];
-      document.getElementById(`p-${key}-sales`).textContent = Storage.formatINR(data.totalSales);
-      document.getElementById(`p-${key}-profit`).textContent = Storage.formatINR(data.estProfit);
-      document.getElementById(`p-${key}-bills`).textContent = `${data.billCount} बिल`;
-    });
   }
 
   function renderDashboard() {
@@ -308,11 +309,10 @@
     const lowItems = sortUrgentFirst(state.inventory.filter(isUrgentStock));
     const fullItems = sortUrgentFirst(state.inventory.filter((it) => !isUrgentStock(it)));
 
-    // Priority alert banner at top of dashboard
     const alertStrip = document.getElementById('dashboard-low-alert-strip');
     if (alertCount > 0) {
       document.getElementById('dashboard-alert-title').textContent =
-        `⚠ ध्यान दें: ${alertCount} आइटम कम या खत्म स्टॉक में हैं! (${metrics.outOfStockCount} खत्म, ${metrics.lowStockCount} कम)`;
+        `${alertCount} ${alertCount === 1 ? 'item' : 'items'} low or out of stock (${metrics.outOfStockCount} out, ${metrics.lowStockCount} low)`;
       document.getElementById('dashboard-alert-sub').textContent =
         lowItems.slice(0, 3).map((i) => `${i.name} (${Storage.formatQty(Storage.getCurrentStock(i))})`).join(' • ');
       alertStrip.classList.remove('hidden');
@@ -320,15 +320,15 @@
       alertStrip.classList.add('hidden');
     }
 
-    document.getElementById('dashboard-low-badge').textContent = `${lowItems.length} आइटम`;
-    document.getElementById('dashboard-full-badge').textContent = `${fullItems.length} आइटम`;
+    document.getElementById('dashboard-low-badge').textContent = `${lowItems.length}`;
+    document.getElementById('dashboard-full-badge').textContent = `${fullItems.length}`;
 
     const lowTbody = document.getElementById('dashboard-low-tbody');
     const lowCards = document.getElementById('dashboard-low-cards');
     if (!lowItems.length) {
       const msg = state.inventory.length
-        ? '✅ बढ़िया! अभी कोई कम या खत्म स्टॉक आइटम नहीं है।'
-        : 'अभी कोई आइटम नहीं है। Inventory टैब में नया आइटम जोड़ें।';
+        ? 'All items are sufficiently stocked.'
+        : 'No items yet. Add products in Inventory.';
       lowTbody.innerHTML = `<tr><td colspan="7" class="empty-state">${msg}</td></tr>`;
       lowCards.innerHTML = `<div class="empty-state">${msg}</div>`;
     } else {
@@ -339,7 +339,7 @@
     const fullTbody = document.getElementById('dashboard-full-tbody');
     const fullCards = document.getElementById('dashboard-full-cards');
     if (!fullItems.length) {
-      const msg = 'पूरा स्टॉक श्रेणी में अभी कोई आइटम नहीं है।';
+      const msg = 'No items in full stock right now.';
       fullTbody.innerHTML = `<tr><td colspan="7" class="empty-state">${msg}</td></tr>`;
       fullCards.innerHTML = `<div class="empty-state">${msg}</div>`;
     } else {
@@ -435,7 +435,7 @@
     const sel = document.getElementById('inv-category-filter');
     const prev = sel.value || 'all';
     const categories = Array.from(new Set(state.inventory.map((i) => i.category).filter(Boolean))).sort();
-    sel.innerHTML = '<option value="all">सभी श्रेणी / All Categories</option>' +
+    sel.innerHTML = '<option value="all">All Categories</option>' +
       categories.map((cat) => `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`).join('');
     sel.value = categories.includes(prev) ? prev : 'all';
   }
@@ -495,7 +495,7 @@
           <div>
             <span class="badge badge-navy">${escapeHtml(item.code)}</span>
             <h4 class="m-card-title" style="margin-top: 4px;">${escapeHtml(item.name)}</h4>
-            <div class="m-card-sub">${escapeHtml(item.category)} • Min: ${Storage.formatQty(item.minAlertLevel)} | In: +${Storage.formatQty(item.stockIn)} | Out: -${Storage.formatQty(item.stockOut)}</div>
+            <div class="m-card-sub">${escapeHtml(item.category)} • Min: ${Storage.formatQty(item.minAlertLevel)}</div>
           </div>
           <span class="badge ${status.badgeClass}">${escapeHtml(status.shortLabel)}</span>
         </div>
@@ -553,8 +553,8 @@
     const totalFullAll = state.inventory.length - totalLowAll;
     document.getElementById('inv-low-tab-count').textContent = String(totalLowAll);
     document.getElementById('inv-full-tab-count').textContent = String(totalFullAll);
-    document.getElementById('inv-low-badge').textContent = `${lowItems.length} आइटम`;
-    document.getElementById('inv-full-badge').textContent = `${fullItems.length} आइटम`;
+    document.getElementById('inv-low-badge').textContent = `${lowItems.length}`;
+    document.getElementById('inv-full-badge').textContent = `${fullItems.length}`;
 
     const showLowSection = activeStockSystem !== 'full' && statusFilter !== 'in';
     const showFullSection = activeStockSystem !== 'low_out' && statusFilter !== 'low_out' && statusFilter !== 'low' && statusFilter !== 'out';
@@ -565,8 +565,8 @@
     const lowCards = document.getElementById('inv-low-cards');
     if (!lowItems.length) {
       const msg = state.inventory.length
-        ? '✅ इस फ़िल्टर में कोई कम या खत्म स्टॉक आइटम नहीं है।'
-        : 'कोई आइटम नहीं मिला। "+ नया आइटम / Add Item" पर क्लिक करें।';
+        ? 'No low or out-of-stock items match your filter.'
+        : 'No items yet. Tap "+ Add Item" to get started.';
       lowTbody.innerHTML = `<tr><td colspan="13" class="empty-state">${msg}</td></tr>`;
       lowCards.innerHTML = `<div class="empty-state">${msg}</div>`;
     } else {
@@ -577,7 +577,7 @@
     const fullTbody = document.getElementById('inv-full-tbody');
     const fullCards = document.getElementById('inv-full-cards');
     if (!fullItems.length) {
-      const msg = 'पूरा स्टॉक श्रेणी में अभी कोई आइटम नहीं मिला।';
+      const msg = 'No items in full stock match your filter.';
       fullTbody.innerHTML = `<tr><td colspan="13" class="empty-state">${msg}</td></tr>`;
       fullCards.innerHTML = `<div class="empty-state">${msg}</div>`;
     } else {
@@ -588,13 +588,11 @@
 
   function openItemModal(itemToEdit) {
     const isEdit = !!itemToEdit;
-    document.getElementById('item-modal-title').textContent = isEdit
-      ? 'आइटम एडिट करें / Edit Item'
-      : 'नया आइटम जोड़ें / Add New Item';
+    document.getElementById('item-modal-title').textContent = isEdit ? 'Edit Item' : 'Add New Item';
     document.getElementById('item-id').value = isEdit ? itemToEdit.id : '';
     document.getElementById('item-code').value = isEdit ? itemToEdit.code : Storage.getNextItemCode(state.inventory);
     document.getElementById('item-name').value = isEdit ? itemToEdit.name : '';
-    document.getElementById('item-category').value = isEdit ? itemToEdit.category : 'किराना / Grocery';
+    document.getElementById('item-category').value = isEdit ? itemToEdit.category : 'Grocery';
     document.getElementById('item-unit').value = isEdit ? itemToEdit.unit : 'Pcs';
     document.getElementById('item-buy-price').value = isEdit ? itemToEdit.buyPrice : '';
     document.getElementById('item-sell-price').value = isEdit ? itemToEdit.sellPrice : '';
@@ -611,10 +609,10 @@
     const sel = document.getElementById('sin-item');
     const currentVal = preselectId || sel.value;
     if (!state.inventory.length) {
-      sel.innerHTML = '<option value="">पहले Inventory में आइटम जोड़ें</option>';
+      sel.innerHTML = '<option value="">Add items in Inventory first</option>';
       return;
     }
-    sel.innerHTML = '<option value="">-- आइटम चुनें / Select Item --</option>' +
+    sel.innerHTML = '<option value="">-- Select Item --</option>' +
       state.inventory.map((item) => {
         const cur = Storage.getCurrentStock(item);
         return `<option value="${escapeHtml(item.id)}">[${escapeHtml(item.code)}] ${escapeHtml(item.name)} (Stock: ${Storage.formatQty(cur)} ${escapeHtml(item.unit)})</option>`;
@@ -652,8 +650,8 @@
     const tbody = document.getElementById('sin-history-tbody');
     const cardsEl = document.getElementById('sin-history-cards');
     if (!list.length) {
-      tbody.innerHTML = '<tr><td colspan="8" class="empty-state">अभी कोई Stock In रिकॉर्ड नहीं है।</td></tr>';
-      cardsEl.innerHTML = '<div class="empty-state">अभी कोई Stock In रिकॉर्ड नहीं है।</div>';
+      tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No stock-in records yet.</td></tr>';
+      cardsEl.innerHTML = '<div class="empty-state">No stock-in records yet.</div>';
       return;
     }
 
@@ -677,7 +675,7 @@
         <div class="m-card-head">
           <div>
             <h4 class="m-card-title">${escapeHtml(entry.itemName)}</h4>
-            <div class="m-card-sub">${escapeHtml(entry.date)} • Supplier: ${escapeHtml(entry.supplierName || '-')}</div>
+            <div class="m-card-sub">${escapeHtml(entry.date)} • ${escapeHtml(entry.supplierName || '-')}</div>
           </div>
           <span class="badge badge-success">+${Storage.formatQty(entry.qty)} ${escapeHtml(entry.unit)}</span>
         </div>
@@ -693,7 +691,7 @@
         </div>
         ${entry.notes ? `<div class="m-card-sub" style="margin-bottom: 8px;">Note: ${escapeHtml(entry.notes)}</div>` : ''}
         <div class="m-card-actions">
-          <button type="button" class="btn btn-sm btn-danger delete-sin-btn" data-id="${escapeHtml(entry.id)}">Delete Entry</button>
+          <button type="button" class="btn btn-sm btn-danger delete-sin-btn" data-id="${escapeHtml(entry.id)}">Delete</button>
         </div>
       </div>
     `).join('');
@@ -728,7 +726,7 @@
     const itemMap = new Map(state.inventory.map((i) => [i.id, i]));
     const requestedMap = getRequestedQtyMap();
 
-    const optionsHtml = '<option value="">-- आइटम चुनें / Select Item --</option>' +
+    const optionsHtml = '<option value="">-- Select Item --</option>' +
       state.inventory.map((it) => {
         const cur = Storage.getCurrentStock(it);
         return `<option value="${escapeHtml(it.id)}">[${escapeHtml(it.code)}] ${escapeHtml(it.name)} — ${Storage.formatINR(it.sellPrice)} (Stock: ${Storage.formatQty(cur)} ${escapeHtml(it.unit)})</option>`;
@@ -745,11 +743,11 @@
         <div class="bill-row-card" data-row-id="${escapeHtml(row.rowId)}">
           <div class="bill-row-grid">
             <div class="form-group bill-cell-item">
-              <label class="form-label">आइटम #${idx + 1} / Item</label>
+              <label class="form-label">Item #${idx + 1}</label>
               <select class="form-control bill-item-select" data-row-id="${escapeHtml(row.rowId)}">
                 ${optionsHtml}
               </select>
-              ${item ? `<div class="stock-hint">उपलब्ध स्टॉक / Available: ${Storage.formatQty(available)} ${escapeHtml(item.unit)}</div>` : ''}
+              ${item ? `<div class="stock-hint">Available: ${Storage.formatQty(available)} ${escapeHtml(item.unit)}</div>` : ''}
             </div>
             <div class="form-group bill-cell-qty">
               <label class="form-label">Qty</label>
@@ -767,12 +765,11 @@
               <button type="button" class="btn btn-danger bill-remove-row-btn" data-row-id="${escapeHtml(row.rowId)}" title="Remove Row">&times;</button>
             </div>
           </div>
-          ${exceedsStock ? `<div class="stock-warning">⚠ चेतावनी: कुल मात्रा (${Storage.formatQty(totalReq)}) उपलब्ध स्टॉक (${Storage.formatQty(available)} ${escapeHtml(item.unit)}) से ज़्यादा है!</div>` : ''}
+          ${exceedsStock ? `<div class="stock-warning">Warning: Quantity (${Storage.formatQty(totalReq)}) exceeds available stock (${Storage.formatQty(available)} ${escapeHtml(item.unit)})!</div>` : ''}
         </div>
       `;
     }).join('');
 
-    // Set selected values after innerHTML
     billRowsState.forEach((row) => {
       const sel = container.querySelector(`.bill-item-select[data-row-id="${row.rowId}"]`);
       if (sel) sel.value = row.itemId;
@@ -829,7 +826,6 @@
     const discount = Storage.roundMoney(Math.min(subTotal, discountRaw));
     const grandTotal = Storage.roundMoney(Math.max(0, subTotal - discount));
 
-    // Deduct stock from inventory
     for (const line of validLines) {
       const invItem = itemMap.get(line.itemId);
       if (invItem) {
@@ -865,10 +861,10 @@
 
     try {
       const pdfFile = PDF.generateInvoicePDF(billRecord, state.settings);
-      showToast(`बिल ${billRecord.billNo} सेव हुआ और ${pdfFile} डाउनलोड हो गया!`, 'success');
+      showToast(`Bill ${billRecord.billNo} saved and ${pdfFile} downloaded.`, 'success');
     } catch (err) {
       console.error('PDF error:', err);
-      showToast(`बिल ${billRecord.billNo} सेव हुआ, लेकिन PDF बनाने में त्रुटि आई।`, 'warning');
+      showToast(`Bill ${billRecord.billNo} saved, but PDF generation failed.`, 'warning');
     }
   }
 
@@ -891,8 +887,8 @@
     const tbody = document.getElementById('bill-history-tbody');
     const cardsEl = document.getElementById('bill-history-cards');
     if (!list.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">अभी कोई बिल रिकॉर्ड नहीं है।</td></tr>';
-      cardsEl.innerHTML = '<div class="empty-state">अभी कोई बिल रिकॉर्ड नहीं है।</div>';
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No bills recorded yet.</td></tr>';
+      cardsEl.innerHTML = '<div class="empty-state">No bills recorded yet.</div>';
       return;
     }
 
@@ -949,7 +945,7 @@
   function openViewBillModal(bill) {
     activeViewBillId = bill.id;
     const s = state.settings;
-    // Rule A: strictly omit logo markup when no logo uploaded
+    // Strictly omit logo markup when no logo uploaded
     const logoHtml = (s.logo && s.logo.startsWith('data:image/'))
       ? `<img src="${s.logo}" alt="Shop Logo" class="invoice-logo">`
       : '';
@@ -983,7 +979,7 @@
 
       <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; font-size: 0.88rem;">
         <div>
-          <strong>ग्राहक / Customer:</strong> ${escapeHtml(bill.customerName)}
+          <strong>Customer:</strong> ${escapeHtml(bill.customerName)}
           ${bill.customerPhone ? ` (${escapeHtml(bill.customerPhone)})` : ''}
         </div>
         <div>
@@ -1039,10 +1035,10 @@
     const txt = document.getElementById('network-status-text');
     if (navigator.onLine) {
       pill.classList.remove('is-offline');
-      txt.textContent = 'ऑफलाइन रेडी';
+      txt.textContent = 'Offline Ready';
     } else {
       pill.classList.add('is-offline');
-      txt.textContent = 'ऑफलाइन मोड';
+      txt.textContent = 'Offline Mode';
     }
   }
 
@@ -1051,7 +1047,7 @@
       navigator.serviceWorker.register('./sw.js')
         .then(() => {
           const detail = document.getElementById('pwa-status-detail');
-          if (detail) detail.textContent = 'Service Worker सक्रिय • 100% Offline Ready PWA';
+          if (detail) detail.textContent = 'Service Worker Active • 100% Offline Ready';
         })
         .catch((err) => {
           console.warn('SW registration skipped/failed:', err);
@@ -1069,7 +1065,7 @@
       deferredInstallPrompt = null;
       document.getElementById('pwa-install-btn').classList.add('hidden');
       document.getElementById('settings-install-btn').classList.add('hidden');
-      showToast('ApnaDukan ऐप आपके डिवाइस में इंस्टॉल हो गया!', 'success');
+      showToast('ApnaDukan app installed on your device.', 'success');
     });
 
     async function handleInstallClick() {
@@ -1088,7 +1084,6 @@
   }
 
   function bindEvents() {
-    // Navigation tabs & shortcuts
     document.querySelectorAll('[data-nav]').forEach((btn) => {
       btn.addEventListener('click', () => switchView(btn.getAttribute('data-nav')));
     });
@@ -1096,7 +1091,6 @@
       btn.addEventListener('click', () => switchView(btn.getAttribute('data-jump')));
     });
 
-    // Modal close buttons & backdrop click
     document.querySelectorAll('[data-close-modal]').forEach((btn) => {
       btn.addEventListener('click', () => closeModal(btn.getAttribute('data-close-modal')));
     });
@@ -1106,7 +1100,6 @@
       });
     });
 
-    // Generic Confirm Modal OK
     document.getElementById('confirm-modal-ok-btn').addEventListener('click', () => {
       const cb = pendingConfirmCallback;
       pendingConfirmCallback = null;
@@ -1114,18 +1107,18 @@
       if (typeof cb === 'function') cb();
     });
 
-    // Header direct 1-click JSON Backup button
+    // Header 1-click JSON Backup
     document.getElementById('header-backup-btn').addEventListener('click', () => {
       try {
         const file = Export.exportToJSON(state);
-        showToast(`पूरा JSON बैकअप ${file} डिवाइस में सेव हो गया!`, 'success');
+        showToast(`Backup saved: ${file}`, 'success');
       } catch (err) {
         console.error(err);
-        showToast('बैकअप डाउनलोड करने में त्रुटि आई।', 'error');
+        showToast('Failed to export backup.', 'error');
       }
     });
 
-    // Dashboard Sales & Profit Period switcher (Today / 1 Month / 1 Year / Total)
+    // Sales & Profit Period switcher
     document.getElementById('sales-period-tabs').addEventListener('click', (e) => {
       const btn = e.target.closest('.period-tab-btn');
       if (btn) setSalesPeriod(btn.getAttribute('data-period'));
@@ -1147,7 +1140,6 @@
       setInventorySystem('full');
     });
 
-    // Dashboard Quick Stock In button (works for both desktop table & mobile cards)
     document.getElementById('view-dashboard').addEventListener('click', (e) => {
       const btn = e.target.closest('.quick-stock-in-btn');
       if (!btn) return;
@@ -1180,7 +1172,6 @@
       renderInventory();
     });
 
-    // Add / Edit / Delete / Quick-Stock Inventory Item (works for both desktop table & mobile cards)
     document.getElementById('open-add-item-btn').addEventListener('click', () => openItemModal(null));
 
     document.getElementById('view-inventory').addEventListener('click', (e) => {
@@ -1203,14 +1194,14 @@
         const item = state.inventory.find((i) => i.id === delBtn.getAttribute('data-id'));
         if (!item) return;
         openConfirmDialog(
-          'आइटम डिलीट करें / Delete Item',
-          `क्या आप "${item.name}" को Inventory से हटाना चाहते हैं?`,
-          'हाँ, डिलीट करें',
+          'Delete Item',
+          `Remove "${item.name}" from Inventory?`,
+          'Delete',
           'btn-danger-solid',
           () => {
             state.inventory = state.inventory.filter((i) => i.id !== item.id);
             persistAndRefresh();
-            showToast(`"${item.name}" Inventory से हटा दिया गया।`, 'success');
+            showToast(`"${item.name}" removed.`, 'success');
           }
         );
       }
@@ -1221,7 +1212,7 @@
       const id = document.getElementById('item-id').value.trim();
       const code = document.getElementById('item-code').value.trim();
       const name = document.getElementById('item-name').value.trim();
-      const category = document.getElementById('item-category').value.trim() || 'अन्य / Other';
+      const category = document.getElementById('item-category').value.trim() || 'Other';
       const unit = document.getElementById('item-unit').value || 'Pcs';
       const buyPrice = Math.max(0, Storage.roundMoney(document.getElementById('item-buy-price').value));
       const sellPrice = Math.max(0, Storage.roundMoney(document.getElementById('item-sell-price').value));
@@ -1229,7 +1220,7 @@
       const minAlertLevel = Math.max(0, Storage.roundQty(document.getElementById('item-min-alert').value));
 
       if (!name || !code) {
-        showToast('कृपया Item Code और Item Name भरें।', 'warning');
+        showToast('Please enter Item Code and Item Name.', 'warning');
         return;
       }
 
@@ -1237,7 +1228,7 @@
         (it) => it.code.toLowerCase() === code.toLowerCase() && it.id !== id
       );
       if (dupCode) {
-        showToast(`Item Code "${code}" पहले से मौजूद है! कृपया अलग कोड डालें।`, 'warning');
+        showToast(`Item Code "${code}" already exists.`, 'warning');
         return;
       }
 
@@ -1254,7 +1245,7 @@
             openingStock,
             minAlertLevel
           });
-          showToast(`"${name}" अपडेट हो गया!`, 'success');
+          showToast(`"${name}" updated.`, 'success');
         }
       } else {
         state.inventory.push({
@@ -1270,7 +1261,7 @@
           stockOut: 0,
           minAlertLevel
         });
-        showToast(`नया आइटम "${name}" जुड़ गया!`, 'success');
+        showToast(`"${name}" added to inventory.`, 'success');
       }
 
       closeModal('item-modal');
@@ -1289,7 +1280,7 @@
       const itemId = document.getElementById('sin-item').value;
       const item = state.inventory.find((i) => i.id === itemId);
       if (!item) {
-        showToast('कृपया पहले कोई आइटम चुनें।', 'warning');
+        showToast('Please select an item first.', 'warning');
         return;
       }
       const date = document.getElementById('sin-date').value || Storage.getTodayISO();
@@ -1300,7 +1291,7 @@
       const updateBuyPrice = document.getElementById('sin-update-buy-price').checked;
 
       if (qty <= 0) {
-        showToast('कृपया 0 से ज़्यादा मात्रा डालें।', 'warning');
+        showToast('Quantity must be greater than 0.', 'warning');
         return;
       }
 
@@ -1329,7 +1320,7 @@
       document.getElementById('sin-update-buy-price').checked = false;
 
       persistAndRefresh();
-      showToast(`${item.name} में +${Storage.formatQty(qty)} ${item.unit} स्टॉक जुड़ गया!`, 'success');
+      showToast(`Added +${Storage.formatQty(qty)} ${item.unit} to ${item.name}.`, 'success');
     });
 
     document.getElementById('view-stock-in').addEventListener('click', (e) => {
@@ -1339,9 +1330,9 @@
       const entry = state.stockInHistory.find((s) => s.id === entryId);
       if (!entry) return;
       openConfirmDialog(
-        'Stock In एंट्री हटाएं',
-        `"${entry.itemName}" (+${Storage.formatQty(entry.qty)} ${entry.unit}) की खरीद एंट्री हटाने पर यह मात्रा स्टॉक से भी घट जाएगी। जारी रखें?`,
-        'हाँ, हटाएं',
+        'Delete Stock In Entry',
+        `Deleting "${entry.itemName}" (+${Storage.formatQty(entry.qty)} ${entry.unit}) will also deduct it from current stock. Continue?`,
+        'Delete',
         'btn-danger-solid',
         () => {
           const item = state.inventory.find((i) => i.id === entry.itemId);
@@ -1350,7 +1341,7 @@
           }
           state.stockInHistory = state.stockInHistory.filter((s) => s.id !== entryId);
           persistAndRefresh();
-          showToast('Stock In एंट्री हटा दी गई।', 'success');
+          showToast('Stock-in entry removed.', 'success');
         }
       );
     });
@@ -1385,7 +1376,6 @@
         if (amountEl) {
           amountEl.value = Storage.formatINR((Number(row.qty) || 0) * (Number(row.rate) || 0));
         }
-        // Update live stock warnings without losing input focus
         const itemMap = new Map(state.inventory.map((i) => [i.id, i]));
         const reqMap = getRequestedQtyMap();
         document.querySelectorAll('.bill-row-card').forEach((rowCard) => {
@@ -1400,7 +1390,7 @@
             if (totalReq > avail) {
               const warn = document.createElement('div');
               warn.className = 'stock-warning';
-              warn.textContent = `⚠ चेतावनी: कुल मात्रा (${Storage.formatQty(totalReq)}) उपलब्ध स्टॉक (${Storage.formatQty(avail)} ${item.unit}) से ज़्यादा है!`;
+              warn.textContent = `Warning: Quantity (${Storage.formatQty(totalReq)}) exceeds available stock (${Storage.formatQty(avail)} ${item.unit})!`;
               rowCard.appendChild(warn);
             }
           }
@@ -1442,7 +1432,7 @@
       const itemMap = new Map(state.inventory.map((i) => [i.id, i]));
       const validRows = billRowsState.filter((r) => r.itemId && itemMap.has(r.itemId) && (Number(r.qty) || 0) > 0);
       if (!validRows.length) {
-        showToast('कृपया बिल में कम से कम 1 वैध आइटम और मात्रा जोड़ें।', 'warning');
+        showToast('Please add at least 1 valid item with quantity > 0.', 'warning');
         return;
       }
 
@@ -1452,7 +1442,7 @@
       }
       const discount = Math.max(0, parseFloat(document.getElementById('bill-discount').value) || 0);
       if (discount > subTotal) {
-        showToast('Discount राशि Sub Total से ज़्यादा नहीं हो सकती।', 'warning');
+        showToast('Discount cannot exceed Sub Total.', 'warning');
         return;
       }
 
@@ -1463,15 +1453,15 @@
         if (!item) continue;
         const avail = Storage.getCurrentStock(item);
         if (reqQty > avail) {
-          overStockItems.push(`${item.name} (मांग: ${Storage.formatQty(reqQty)}, उपलब्ध: ${Storage.formatQty(avail)})`);
+          overStockItems.push(`${item.name} (Need: ${Storage.formatQty(reqQty)}, Stock: ${Storage.formatQty(avail)})`);
         }
       }
 
       if (overStockItems.length) {
         openConfirmDialog(
-          'कम स्टॉक चेतावनी / Low Stock Warning',
-          `निम्नलिखित आइटम्स की मात्रा उपलब्ध स्टॉक से ज़्यादा है:\n${overStockItems.join(', ')}\nक्या फिर भी बिल सेव करना चाहते हैं?`,
-          'हाँ, बिल सेव करें',
+          'Low Stock Warning',
+          `Some items exceed available stock: ${overStockItems.join(', ')}. Save bill anyway?`,
+          'Save Anyway',
           'btn-primary',
           finalizeAndSaveBill
         );
@@ -1498,10 +1488,10 @@
         if (bill) {
           try {
             const file = PDF.generateInvoicePDF(bill, state.settings);
-            showToast(`${file} डाउनलोड हो गया!`, 'success');
+            showToast(`${file} downloaded.`, 'success');
           } catch (err) {
             console.error(err);
-            showToast('PDF जनरेट करने में त्रुटि आई।', 'error');
+            showToast('Failed to generate PDF.', 'error');
           }
         }
         return;
@@ -1512,7 +1502,7 @@
         if (!bill) return;
         pendingDeleteBillId = bill.id;
         document.getElementById('delete-bill-msg').textContent =
-          `क्या आप बिल ${bill.billNo} (${bill.customerName} — ${Storage.formatINR(bill.grandTotal)}) को डिलीट करना चाहते हैं?`;
+          `Delete bill ${bill.billNo} (${bill.customerName} — ${Storage.formatINR(bill.grandTotal)})?`;
         document.getElementById('delete-bill-restore-stock').checked = true;
         openModal('delete-bill-modal');
       }
@@ -1523,10 +1513,10 @@
       if (!bill) return;
       try {
         const file = PDF.generateInvoicePDF(bill, state.settings);
-        showToast(`${file} डाउनलोड हो गया!`, 'success');
+        showToast(`${file} downloaded.`, 'success');
       } catch (err) {
         console.error(err);
-        showToast('PDF डाउनलोड करने में त्रुटि आई।', 'error');
+        showToast('Failed to download PDF.', 'error');
       }
     });
 
@@ -1547,10 +1537,10 @@
       pendingDeleteBillId = null;
       closeModal('delete-bill-modal');
       persistAndRefresh();
-      showToast(restoreStock ? 'बिल डिलीट हुआ और स्टॉक वापस जुड़ गया!' : 'बिल डिलीट हो गया।', 'success');
+      showToast(restoreStock ? 'Bill deleted and stock restored.' : 'Bill deleted.', 'success');
     });
 
-    // Settings Form & Logo Upload (preserves typed fields across logo changes + saves reliably)
+    // Settings Form & Logo Upload
     ['set-shop-name', 'set-phone', 'set-address', 'set-footer-note'].forEach((fieldId) => {
       document.getElementById(fieldId).addEventListener('change', () => {
         applySettingsInputsToState(false);
@@ -1572,15 +1562,15 @@
         applySettingsInputsToState(true);
         state.settings.logo = base64;
         if (!Storage.saveState(state)) {
-          showToast('स्टोरेज भर गया है! कृपया छोटा लोगो उपयोग करें।', 'error');
+          showToast('Storage is full. Please choose a smaller logo.', 'error');
           return;
         }
         renderHeader();
         renderLogoPreview();
-        showToast('दुकान का लोगो व विवरण सेव हो गया!', 'success');
+        showToast('Logo and shop details saved.', 'success');
       } catch (err) {
         console.error(err);
-        showToast('इमेज अपलोड करने में त्रुटि। कृपया वैध इमेज चुनें।', 'error');
+        showToast('Failed to upload image. Please select a valid image.', 'error');
       }
     });
 
@@ -1590,39 +1580,39 @@
       Storage.saveState(state);
       renderHeader();
       renderLogoPreview();
-      showToast('दुकान का लोगो हटा दिया गया।', 'success');
+      showToast('Shop logo removed.', 'success');
     });
 
     document.getElementById('settings-form').addEventListener('submit', (e) => {
       e.preventDefault();
       applySettingsInputsToState(true);
       if (!Storage.saveState(state)) {
-        showToast('डेटा सेव नहीं हो सका (ब्राउज़र स्टोरेज सीमा/त्रुटि)।', 'error');
+        showToast('Could not save settings (browser storage error).', 'error');
         return;
       }
       renderHeader();
       renderSettingsForm();
-      showToast('दुकान का नाम, नंबर, पता और लोगो सफलतापूर्वक सेव हो गए!', 'success');
+      showToast('Shop settings saved.', 'success');
     });
 
     // Backup, Export & Import
     document.getElementById('export-json-btn').addEventListener('click', () => {
       try {
         const file = Export.exportToJSON(state);
-        showToast(`पूरा बैकअप ${file} डाउनलोड हो गया!`, 'success');
+        showToast(`Backup saved: ${file}`, 'success');
       } catch (err) {
         console.error(err);
-        showToast('JSON एक्सपोर्ट में त्रुटि आई।', 'error');
+        showToast('JSON export failed.', 'error');
       }
     });
 
     document.getElementById('export-excel-btn').addEventListener('click', () => {
       try {
         const file = Export.exportToExcel(state);
-        showToast(`Excel रिपोर्ट ${file} डाउनलोड हो गई!`, 'success');
+        showToast(`Excel saved: ${file}`, 'success');
       } catch (err) {
         console.error(err);
-        showToast('Excel एक्सपोर्ट में त्रुटि आई।', 'error');
+        showToast('Excel export failed.', 'error');
       }
     });
 
@@ -1643,16 +1633,16 @@
           document.getElementById('import-summary-box').innerHTML = `
             <div><strong>Shop Name:</strong> ${escapeHtml(validated.settings.shopName)}</div>
             <div><strong>Shop Logo:</strong> ${validated.settings.logo ? 'Included' : 'None'}</div>
-            <div><strong>Inventory Products:</strong> ${validated.inventory.length}</div>
+            <div><strong>Products:</strong> ${validated.inventory.length}</div>
             <div><strong>Stock In Records:</strong> ${validated.stockInHistory.length}</div>
-            <div><strong>Bills in History:</strong> ${validated.billHistory.length}</div>
+            <div><strong>Bills:</strong> ${validated.billHistory.length}</div>
           `;
           openModal('import-confirm-modal');
         } catch (err) {
-          showToast(err.message || 'अमान्य JSON बैकअप फाइल!', 'error');
+          showToast(err.message || 'Invalid JSON backup file.', 'error');
         }
       };
-      reader.onerror = () => showToast('बैकअप फाइल पढ़ने में त्रुटि हुई।', 'error');
+      reader.onerror = () => showToast('Failed to read backup file.', 'error');
       reader.readAsText(file);
     });
 
@@ -1663,7 +1653,7 @@
       closeModal('import-confirm-modal');
       persistAndRefresh();
       resetBillForm();
-      showToast('बैकअप सफलतापूर्वक रिस्टोर हो गया!', 'success');
+      showToast('Backup restored successfully.', 'success');
     });
 
     // Clear All / Reset Data
@@ -1679,7 +1669,7 @@
       closeModal('reset-modal');
       persistAndRefresh();
       resetBillForm();
-      showToast('सारा स्टॉक व बिल डेटा साफ हो गया — अब आप नया काम शुरू कर सकते हैं!', 'success');
+      showToast('All stock and bills cleared.', 'success');
     });
 
     document.getElementById('reset-sample-btn').addEventListener('click', () => {
@@ -1687,7 +1677,7 @@
       closeModal('reset-modal');
       persistAndRefresh();
       resetBillForm();
-      showToast('5 सैंपल आइटम्स लोड हो गए!', 'success');
+      showToast('5 sample items loaded.', 'success');
     });
 
     window.addEventListener('online', updateNetworkIndicator);

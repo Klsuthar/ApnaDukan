@@ -1,14 +1,14 @@
 {
   "name": "ApnaDukan — Shop Stock & Billing",
   "short_name": "ApnaDukan",
-  "description": "100% Offline Bilingual (Hindi + English) Shop Stock Management & Billing Web App (PWA)",
+  "description": "100% Offline Shop Stock Management & Billing Web App (PWA)",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
   "theme_color": "#1E3A5F",
   "background_color": "#F4F7FA",
-  "lang": "hi-IN",
+  "lang": "en",
   "categories": ["business", "finance", "productivity"],
   "icons": [
     {

@@ -216,7 +216,7 @@ button {
 
 /* Page Content */
 .content-wrap {
-  padding: 16px;
+  padding: 12px;
   max-width: 1280px;
   width: 100%;
   margin: 0 auto;
@@ -241,20 +241,20 @@ button {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .page-title {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: var(--navy);
 }
 
 .page-desc {
   margin: 2px 0 0;
-  font-size: 0.84rem;
+  font-size: 0.82rem;
   color: var(--text-soft);
 }
 
@@ -264,8 +264,8 @@ button {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
-  padding: 16px;
-  margin-bottom: 16px;
+  padding: 14px;
+  margin-bottom: 12px;
 }
 
 .card-header {

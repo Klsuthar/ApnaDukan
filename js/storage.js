@@ -4,10 +4,10 @@
   const STORAGE_KEY = 'apnadukan_pos_data_v1';
 
   const DEFAULT_SETTINGS = {
-    shopName: 'अपना दुकान (ApnaDukan)',
+    shopName: 'ApnaDukan',
     address: '',
     phone: '',
-    footerNote: 'धन्यवाद! फिर पधारें | Thank you! Visit again.',
+    footerNote: 'Thank you! Visit again.',
     logo: ''
   };
 
@@ -16,8 +16,8 @@
       {
         id: 'itm-sample-1',
         code: 'ITM-101',
-        name: 'Tata Salt (टाटा नमक) 1Kg',
-        category: 'किराना / Grocery',
+        name: 'Tata Salt 1Kg',
+        category: 'Grocery',
         unit: 'Packet',
         buyPrice: 20,
         sellPrice: 28,
@@ -30,7 +30,7 @@
         id: 'itm-sample-2',
         code: 'ITM-102',
         name: 'Aashirvaad Atta 5Kg',
-        category: 'किराना / Grocery',
+        category: 'Grocery',
         unit: 'Bag',
         buyPrice: 205,
         sellPrice: 235,
@@ -43,7 +43,7 @@
         id: 'itm-sample-3',
         code: 'ITM-103',
         name: 'Fortune Mustard Oil 1L',
-        category: 'तेल व घी / Oil & Ghee',
+        category: 'Oil & Ghee',
         unit: 'Bottle',
         buyPrice: 135,
         sellPrice: 155,
@@ -56,7 +56,7 @@
         id: 'itm-sample-4',
         code: 'ITM-104',
         name: 'Amul Taaza Milk 500ml',
-        category: 'डेयरी / Dairy',
+        category: 'Dairy',
         unit: 'Packet',
         buyPrice: 25,
         sellPrice: 28,
@@ -69,7 +69,7 @@
         id: 'itm-sample-5',
         code: 'ITM-105',
         name: 'Parle-G Gold Biscuit',
-        category: 'बिस्कुट / Snacks',
+        category: 'Snacks',
         unit: 'Packet',
         buyPrice: 8,
         sellPrice: 10,
@@ -125,6 +125,15 @@
     return y + '-' + m + '-' + day;
   }
 
+  function addDaysISO(baseIso, deltaDays) {
+    const parts = String(baseIso || getTodayISO()).split('-').map(Number);
+    const d = new Date(parts[0], (parts[1] || 1) - 1, (parts[2] || 1) + deltaDays);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + day;
+  }
+
   function generateId(prefix) {
     return (prefix || 'id') + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
   }
@@ -142,7 +151,7 @@
     if (current <= 0) {
       return {
         key: 'out',
-        label: 'Out of Stock / खत्म',
+        label: 'Out of Stock',
         shortLabel: 'Out of Stock',
         badgeClass: 'badge-danger'
       };
@@ -150,14 +159,14 @@
     if (current <= minAlert) {
       return {
         key: 'low',
-        label: 'Low Stock / कम स्टॉक',
+        label: 'Low Stock',
         shortLabel: 'Low Stock',
         badgeClass: 'badge-warning'
       };
     }
     return {
       key: 'in',
-      label: 'In Stock / स्टॉक में',
+      label: 'In Stock',
       shortLabel: 'In Stock',
       badgeClass: 'badge-success'
     };
@@ -166,15 +175,6 @@
   function getStockValue(item) {
     const current = Math.max(0, getCurrentStock(item));
     return roundMoney(current * (Number(item.buyPrice) || 0));
-  }
-
-  function addDaysISO(baseIso, deltaDays) {
-    const parts = String(baseIso || getTodayISO()).split('-').map(Number);
-    const d = new Date(parts[0], (parts[1] || 1) - 1, (parts[2] || 1) + deltaDays);
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return y + '-' + m + '-' + day;
   }
 
   function computeSalesAndProfit(bills, inventory) {
@@ -290,7 +290,7 @@
           id: String(it.id || generateId('itm')),
           code: String(it.code || '').trim(),
           name: String(it.name || '').trim(),
-          category: String(it.category || 'अन्य / Other').trim(),
+          category: String(it.category || 'Other').trim(),
           unit: String(it.unit || 'Pcs').trim(),
           buyPrice: Math.max(0, roundMoney(it.buyPrice)),
           sellPrice: Math.max(0, roundMoney(it.sellPrice)),
@@ -368,23 +368,23 @@
 
   function validateBackupPayload(raw) {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
-      throw new Error('अमान्य बैकअप फाइल: JSON ऑब्जेक्ट नहीं मिला। / Invalid JSON backup object.');
+      throw new Error('Invalid backup file: expected a JSON object.');
     }
     if (!raw.settings || typeof raw.settings !== 'object') {
-      throw new Error('बैकअप फाइल में Shop Settings मौजूद नहीं हैं। / Missing settings in backup.');
+      throw new Error('Invalid backup file: missing settings.');
     }
     if (!Array.isArray(raw.inventory)) {
-      throw new Error('बैकअप फाइल में Inventory लिस्ट मौजूद नहीं है। / Missing inventory array.');
+      throw new Error('Invalid backup file: missing inventory list.');
     }
     if (!Array.isArray(raw.stockInHistory)) {
-      throw new Error('बैकअप फाइल में Stock In हिस्ट्री मौजूद नहीं है। / Missing stockInHistory array.');
+      throw new Error('Invalid backup file: missing stockInHistory list.');
     }
     if (!Array.isArray(raw.billHistory)) {
-      throw new Error('बैकअप फाइल में Bill History मौजूद नहीं है। / Missing billHistory array.');
+      throw new Error('Invalid backup file: missing billHistory list.');
     }
     for (const item of raw.inventory) {
       if (!item || typeof item !== 'object' || !String(item.name || '').trim()) {
-        throw new Error('Inventory में कोई आइटम अधूरा है (नाम खाली है)। / Invalid inventory item found.');
+        throw new Error('Invalid inventory item found in backup file.');
       }
     }
     return normalizeState(raw);
