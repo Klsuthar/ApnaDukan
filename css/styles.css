@@ -37,10 +37,12 @@ html, body {
   margin: 0;
   padding: 0;
   min-height: 100%;
+  overflow-x: hidden;
   background-color: var(--bg);
   color: var(--text);
   font-family: "Segoe UI", "Noto Sans Devanagari", system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
   line-height: 1.45;
 }
 
@@ -507,9 +509,117 @@ tbody tr:hover {
 
 .bill-row-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
   align-items: end;
+}
+
+.bill-cell-item {
+  grid-column: 1 / -1;
+  position: relative;
+  padding-right: 44px;
+}
+
+.bill-cell-remove {
+  position: absolute;
+  top: 23px;
+  right: 0;
+}
+
+.bill-row-card {
+  position: relative;
+}
+
+.bill-cell-remove .btn {
+  width: 38px;
+  min-height: 42px;
+  padding: 0;
+}
+
+.bill-form-actions {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 10px;
+}
+
+.bill-form-actions .btn {
+  width: 100%;
+  min-height: 46px;
+}
+
+/* Mobile Card Lists (< 768px) vs Desktop Table (>= 768px) */
+.desktop-only-table {
+  display: none;
+}
+
+.mobile-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.m-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  background: #FFFFFF;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.m-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.m-card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin: 0;
+}
+
+.m-card-sub {
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  margin-top: 2px;
+}
+
+.m-card-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 8px 0;
+  margin: 8px 0;
+  border-top: 1px dashed var(--border);
+  border-bottom: 1px dashed var(--border);
+}
+
+.m-stat-label {
+  font-size: 0.7rem;
+  color: var(--text-soft);
+  font-weight: 600;
+}
+
+.m-stat-val {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.m-card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.m-card-actions .btn {
+  flex: 1;
+  min-height: 38px;
 }
 
 .stock-hint {
@@ -563,13 +673,16 @@ tbody tr:hover {
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 40;
-  background: var(--surface);
+  z-index: 45;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--border);
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  box-shadow: 0 -2px 10px rgba(15, 23, 42, 0.06);
+  padding: 4px 4px calc(env(safe-area-inset-bottom, 0px) + 4px);
+  box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.08);
+  touch-action: manipulation;
 }
 
 .bottom-nav-btn {
@@ -577,14 +690,30 @@ tbody tr:hover {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  padding: 7px 2px;
+  gap: 3px;
+  padding: 4px 2px;
   border: none;
   background: transparent;
   color: var(--text-soft);
-  font-size: 0.66rem;
+  font-size: 0.67rem;
   font-weight: 600;
-  min-height: var(--bottom-nav-h);
+  min-height: 56px;
+  position: relative;
+  transition: color 0.15s, transform 0.1s;
+}
+
+.bottom-nav-btn:active {
+  transform: scale(0.95);
+}
+
+.bottom-nav-icon-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  transition: background-color 0.16s;
 }
 
 .bottom-nav-btn svg {
@@ -593,12 +722,49 @@ tbody tr:hover {
 }
 
 .bottom-nav-btn.active {
-  color: var(--teal);
+  color: var(--teal-dark);
   font-weight: 700;
 }
 
+.bottom-nav-btn.active .bottom-nav-icon-wrap {
+  background: var(--teal-light);
+}
+
 .bottom-nav-btn.active svg {
-  stroke: var(--teal);
+  stroke: var(--teal-dark);
+}
+
+.nav-badge-dot {
+  position: absolute;
+  top: 1px;
+  right: 6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--danger-dot);
+  color: #FFFFFF;
+  font-size: 0.62rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.nav-badge {
+  margin-left: auto;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--danger-dot);
+  color: #FFFFFF;
+  font-size: 0.72rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Modal */
@@ -806,6 +972,36 @@ tbody tr:hover {
 }
 
 /* Tablet & Desktop Breakpoints */
+@media (max-width: 639px) {
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .modal-dialog {
+    border-radius: 18px 18px 0 0;
+    max-height: 92dvh;
+    max-width: 100%;
+  }
+  .toast-container {
+    top: 68px;
+    left: 12px;
+    right: 12px;
+    max-width: none;
+  }
+  .page-head .action-group {
+    width: 100%;
+  }
+  .page-head .action-group .btn {
+    flex: 1;
+  }
+  .bill-summary-box {
+    max-width: 100%;
+  }
+  .chart-box {
+    height: 245px;
+  }
+}
+
 @media (min-width: 640px) {
   .form-grid.cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -813,15 +1009,43 @@ tbody tr:hover {
   .filter-bar {
     grid-template-columns: 2fr 1fr 1fr;
   }
+  .filter-bar.filter-bar-2 {
+    grid-template-columns: 2fr 1fr;
+  }
   .backup-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .bill-row-grid {
-    grid-template-columns: 2.3fr 0.9fr 1fr 1fr auto;
+    grid-template-columns: 2.3fr 0.85fr 1fr 1fr auto;
+    gap: 10px;
+  }
+  .bill-cell-item {
+    grid-column: auto;
+    padding-right: 0;
+  }
+  .bill-cell-remove {
+    position: static;
+  }
+  .bill-cell-remove .btn {
+    width: auto;
+    padding: 0 12px;
+  }
+  .bill-form-actions {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+  .bill-form-actions .btn {
+    width: auto;
   }
 }
 
 @media (min-width: 768px) {
+  .desktop-only-table {
+    display: block;
+  }
+  .mobile-card-list {
+    display: none;
+  }
   .app-shell {
     flex-direction: row;
   }

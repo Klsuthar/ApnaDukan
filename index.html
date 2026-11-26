@@ -51,6 +51,7 @@
         <button type="button" class="sidebar-btn" data-nav="inventory">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
           <span>स्टॉक / Inventory</span>
+          <span id="nav-stock-badge-desktop" class="nav-badge hidden">0</span>
         </button>
         <button type="button" class="sidebar-btn" data-nav="stock-in">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M8 5H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4"/></svg>
@@ -158,7 +159,7 @@
               <h3 class="card-title">लाइव स्टॉक ट्रैकर / Live Stock Tracker</h3>
               <button type="button" class="btn btn-sm btn-outline" data-jump="inventory">सभी आइटम देखें</button>
             </div>
-            <div class="table-wrap">
+            <div class="table-wrap desktop-only-table">
               <table>
                 <thead>
                   <tr>
@@ -174,6 +175,7 @@
                 <tbody id="dashboard-stock-tbody"></tbody>
               </table>
             </div>
+            <div id="dashboard-stock-cards" class="mobile-card-list"></div>
           </div>
         </section>
 
@@ -201,7 +203,7 @@
               </select>
             </div>
 
-            <div class="table-wrap">
+            <div class="table-wrap desktop-only-table">
               <table>
                 <thead>
                   <tr>
@@ -223,6 +225,7 @@
                 <tbody id="inventory-tbody"></tbody>
               </table>
             </div>
+            <div id="inventory-cards" class="mobile-card-list"></div>
           </div>
         </section>
 
@@ -253,11 +256,11 @@
                 </div>
                 <div class="form-group">
                   <label class="form-label" for="sin-qty">मात्रा जोड़ें / Quantity Added *</label>
-                  <input type="number" id="sin-qty" class="form-control" step="any" min="0.001" placeholder="0" required>
+                  <input type="number" id="sin-qty" class="form-control" inputmode="decimal" step="any" min="0.001" placeholder="0" required>
                 </div>
                 <div class="form-group">
                   <label class="form-label" for="sin-rate">खरीद दर / Buy Rate (₹) *</label>
-                  <input type="number" id="sin-rate" class="form-control" step="any" min="0" placeholder="0" required>
+                  <input type="number" id="sin-rate" class="form-control" inputmode="decimal" step="any" min="0" placeholder="0" required>
                 </div>
                 <div class="form-group">
                   <label class="form-label" for="sin-total">कुल लागत / Total Cost (₹)</label>
@@ -285,7 +288,7 @@
               <h3 class="card-title">Stock In हिस्ट्री / Purchase History</h3>
               <input type="search" id="sin-search" class="form-control" style="max-width: 280px;" placeholder="आइटम या सप्लायर खोजें...">
             </div>
-            <div class="table-wrap">
+            <div class="table-wrap desktop-only-table">
               <table>
                 <thead>
                   <tr>
@@ -302,6 +305,7 @@
                 <tbody id="sin-history-tbody"></tbody>
               </table>
             </div>
+            <div id="sin-history-cards" class="mobile-card-list"></div>
           </div>
         </section>
 
@@ -359,7 +363,7 @@
               </div>
               <div class="summary-line">
                 <label for="bill-discount">Discount / छूट (₹):</label>
-                <input type="number" id="bill-discount" class="form-control tabular" style="width: 130px; min-height: 36px; text-align: right;" min="0" step="any" value="0">
+                <input type="number" id="bill-discount" class="form-control tabular" inputmode="decimal" style="width: 130px; min-height: 36px; text-align: right;" min="0" step="any" value="0">
               </div>
               <div class="summary-line grand">
                 <span>Grand Total (कुल राशि):</span>
@@ -367,7 +371,7 @@
               </div>
             </div>
 
-            <div style="margin-top: 16px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px;">
+            <div class="bill-form-actions">
               <button type="button" id="reset-bill-btn" class="btn btn-outline">रीसेट / Clear Form</button>
               <button type="submit" class="btn btn-primary">Save &amp; Download PDF Bill</button>
             </div>
@@ -384,7 +388,7 @@
           </div>
 
           <div class="card">
-            <div class="filter-bar" style="grid-template-columns: 2fr 1fr;">
+            <div class="filter-bar filter-bar-2">
               <input type="search" id="history-search" class="form-control" placeholder="Bill No या ग्राहक के नाम से खोजें / Search Bill No or Customer...">
               <select id="history-payment-filter" class="form-control">
                 <option value="all">सभी पेमेंट मोड / All Modes</option>
@@ -395,7 +399,7 @@
               </select>
             </div>
 
-            <div class="table-wrap">
+            <div class="table-wrap desktop-only-table">
               <table>
                 <thead>
                   <tr>
@@ -411,6 +415,7 @@
                 <tbody id="bill-history-tbody"></tbody>
               </table>
             </div>
+            <div id="bill-history-cards" class="mobile-card-list"></div>
           </div>
         </section>
 
@@ -516,27 +521,40 @@
     <!-- Mobile Bottom Navigation -->
     <nav class="bottom-nav" aria-label="Mobile Navigation">
       <button type="button" class="bottom-nav-btn active" data-nav="dashboard">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+        <span class="bottom-nav-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+        </span>
         <span>डैशबोर्ड</span>
       </button>
       <button type="button" class="bottom-nav-btn" data-nav="inventory">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        <span class="bottom-nav-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          <span id="nav-stock-badge-mobile" class="nav-badge-dot hidden">0</span>
+        </span>
         <span>स्टॉक</span>
       </button>
       <button type="button" class="bottom-nav-btn" data-nav="stock-in">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M8 5H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4"/></svg>
+        <span class="bottom-nav-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M8 5H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4"/></svg>
+        </span>
         <span>माल जोड़ें</span>
       </button>
       <button type="button" class="bottom-nav-btn" data-nav="billing">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        <span class="bottom-nav-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        </span>
         <span>बिल</span>
       </button>
       <button type="button" class="bottom-nav-btn" data-nav="history">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16l3-2 2 2 3-2 3 2 2-2 3 2V8z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg>
+        <span class="bottom-nav-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16l3-2 2 2 3-2 3 2 2-2 3 2V8z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg>
+        </span>
         <span>रिकॉर्ड</span>
       </button>
       <button type="button" class="bottom-nav-btn" data-nav="settings">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span class="bottom-nav-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </span>
         <span>सेटिंग्स</span>
       </button>
     </nav>
@@ -597,19 +615,19 @@
           <div class="form-grid cols-2" style="margin-top: 12px;">
             <div class="form-group">
               <label class="form-label" for="item-buy-price">खरीद मूल्य / Buy Price (₹) *</label>
-              <input type="number" id="item-buy-price" class="form-control" step="any" min="0" required value="0">
+              <input type="number" id="item-buy-price" class="form-control" inputmode="decimal" step="any" min="0" required value="0">
             </div>
             <div class="form-group">
               <label class="form-label" for="item-sell-price">बिक्री मूल्य / Sell Price (₹) *</label>
-              <input type="number" id="item-sell-price" class="form-control" step="any" min="0" required value="0">
+              <input type="number" id="item-sell-price" class="form-control" inputmode="decimal" step="any" min="0" required value="0">
             </div>
             <div class="form-group">
               <label class="form-label" for="item-opening-stock">शुरुआती स्टॉक / Opening Stock *</label>
-              <input type="number" id="item-opening-stock" class="form-control" step="any" min="0" required value="0">
+              <input type="number" id="item-opening-stock" class="form-control" inputmode="decimal" step="any" min="0" required value="0">
             </div>
             <div class="form-group">
               <label class="form-label" for="item-min-alert">न्यूनतम अलर्ट / Min Alert Level *</label>
-              <input type="number" id="item-min-alert" class="form-control" step="any" min="0" required value="5">
+              <input type="number" id="item-min-alert" class="form-control" inputmode="decimal" step="any" min="0" required value="5">
             </div>
           </div>
         </div>

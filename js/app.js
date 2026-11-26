@@ -73,6 +73,7 @@
     document.querySelectorAll('[data-nav]').forEach((btn) => {
       btn.classList.toggle('active', btn.getAttribute('data-nav') === viewName);
     });
+    window.scrollTo({ top: 0, behavior: 'instant' });
     if (viewName === 'dashboard') {
       renderDashboardChart();
     }
@@ -170,9 +171,23 @@
     document.getElementById('kpi-low-stock').textContent = String(metrics.lowStockCount);
     document.getElementById('kpi-out-stock').textContent = String(metrics.outOfStockCount);
 
+    const alertCount = metrics.lowStockCount + metrics.outOfStockCount;
+    ['nav-stock-badge-desktop', 'nav-stock-badge-mobile'].forEach((id) => {
+      const badge = document.getElementById(id);
+      if (!badge) return;
+      if (alertCount > 0) {
+        badge.textContent = alertCount > 99 ? '99+' : String(alertCount);
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    });
+
     const tbody = document.getElementById('dashboard-stock-tbody');
+    const cardsEl = document.getElementById('dashboard-stock-cards');
     if (!state.inventory.length) {
       tbody.innerHTML = '<tr><td colspan="7" class="empty-state">अभी कोई आइटम नहीं है। Inventory टैब में नया आइटम जोड़ें।</td></tr>';
+      cardsEl.innerHTML = '<div class="empty-state">अभी कोई आइटम नहीं है। स्टॉक टैब में नया आइटम जोड़ें।</div>';
     } else {
       const sorted = [...state.inventory].sort((a, b) => Storage.getCurrentStock(a) - Storage.getCurrentStock(b));
       tbody.innerHTML = sorted.map((item) => {
@@ -190,6 +205,36 @@
               <button type="button" class="btn btn-sm btn-outline quick-stock-in-btn" data-item-id="${escapeHtml(item.id)}">+ Stock</button>
             </td>
           </tr>
+        `;
+      }).join('');
+
+      cardsEl.innerHTML = sorted.map((item) => {
+        const current = Storage.getCurrentStock(item);
+        const st = Storage.getStockStatus(item);
+        return `
+          <div class="m-card">
+            <div class="m-card-head">
+              <div>
+                <span class="badge badge-navy">${escapeHtml(item.code)}</span>
+                <h4 class="m-card-title" style="margin-top: 4px;">${escapeHtml(item.name)}</h4>
+                <div class="m-card-sub">${escapeHtml(item.category)}</div>
+              </div>
+              <span class="badge ${st.badgeClass}">${escapeHtml(st.shortLabel)}</span>
+            </div>
+            <div class="m-card-stats" style="grid-template-columns: repeat(2, 1fr);">
+              <div>
+                <div class="m-stat-label">मौजूदा स्टॉक / Stock</div>
+                <div class="m-stat-val">${Storage.formatQty(current)} ${escapeHtml(item.unit)}</div>
+              </div>
+              <div>
+                <div class="m-stat-label">बिक्री मूल्य / Sell Price</div>
+                <div class="m-stat-val">${Storage.formatINR(item.sellPrice)}</div>
+              </div>
+            </div>
+            <div class="m-card-actions">
+              <button type="button" class="btn btn-sm btn-outline quick-stock-in-btn" data-item-id="${escapeHtml(item.id)}">+ माल जोड़ें / Stock In</button>
+            </div>
+          </div>
         `;
       }).join('');
     }
@@ -304,8 +349,10 @@
     });
 
     const tbody = document.getElementById('inventory-tbody');
+    const cardsEl = document.getElementById('inventory-cards');
     if (!filtered.length) {
       tbody.innerHTML = '<tr><td colspan="13" class="empty-state">कोई आइटम नहीं मिला। "+ नया आइटम / Add Item" पर क्लिक करें।</td></tr>';
+      cardsEl.innerHTML = '<div class="empty-state">कोई आइटम नहीं मिला। "+ नया आइटम / Add Item" पर टैप करें।</div>';
       return;
     }
 
@@ -334,6 +381,42 @@
             </div>
           </td>
         </tr>
+      `;
+    }).join('');
+
+    cardsEl.innerHTML = filtered.map((item) => {
+      const current = Storage.getCurrentStock(item);
+      const status = Storage.getStockStatus(item);
+      const value = Storage.getStockValue(item);
+      return `
+        <div class="m-card">
+          <div class="m-card-head">
+            <div>
+              <span class="badge badge-navy">${escapeHtml(item.code)}</span>
+              <h4 class="m-card-title" style="margin-top: 4px;">${escapeHtml(item.name)}</h4>
+              <div class="m-card-sub">${escapeHtml(item.category)} • Open: ${Storage.formatQty(item.openingStock)} | In: +${Storage.formatQty(item.stockIn)} | Out: -${Storage.formatQty(item.stockOut)}</div>
+            </div>
+            <span class="badge ${status.badgeClass}">${escapeHtml(status.shortLabel)}</span>
+          </div>
+          <div class="m-card-stats">
+            <div>
+              <div class="m-stat-label">Stock</div>
+              <div class="m-stat-val">${Storage.formatQty(current)} ${escapeHtml(item.unit)}</div>
+            </div>
+            <div>
+              <div class="m-stat-label">Buy / Sell</div>
+              <div class="m-stat-val">${Storage.formatINR(item.buyPrice)} / ${Storage.formatINR(item.sellPrice)}</div>
+            </div>
+            <div>
+              <div class="m-stat-label">Value</div>
+              <div class="m-stat-val">${Storage.formatINR(value)}</div>
+            </div>
+          </div>
+          <div class="m-card-actions">
+            <button type="button" class="btn btn-sm btn-outline edit-item-btn" data-id="${escapeHtml(item.id)}">Edit</button>
+            <button type="button" class="btn btn-sm btn-danger delete-item-btn" data-id="${escapeHtml(item.id)}">Delete</button>
+          </div>
+        </div>
       `;
     }).join('');
   }
@@ -402,8 +485,10 @@
     });
 
     const tbody = document.getElementById('sin-history-tbody');
+    const cardsEl = document.getElementById('sin-history-cards');
     if (!list.length) {
       tbody.innerHTML = '<tr><td colspan="8" class="empty-state">अभी कोई Stock In रिकॉर्ड नहीं है।</td></tr>';
+      cardsEl.innerHTML = '<div class="empty-state">अभी कोई Stock In रिकॉर्ड नहीं है।</div>';
       return;
     }
 
@@ -420,6 +505,32 @@
           <button type="button" class="btn btn-sm btn-danger delete-sin-btn" data-id="${escapeHtml(entry.id)}">Delete</button>
         </td>
       </tr>
+    `).join('');
+
+    cardsEl.innerHTML = list.map((entry) => `
+      <div class="m-card">
+        <div class="m-card-head">
+          <div>
+            <h4 class="m-card-title">${escapeHtml(entry.itemName)}</h4>
+            <div class="m-card-sub">${escapeHtml(entry.date)} • Supplier: ${escapeHtml(entry.supplierName || '-')}</div>
+          </div>
+          <span class="badge badge-success">+${Storage.formatQty(entry.qty)} ${escapeHtml(entry.unit)}</span>
+        </div>
+        <div class="m-card-stats" style="grid-template-columns: repeat(2, 1fr);">
+          <div>
+            <div class="m-stat-label">Buy Rate</div>
+            <div class="m-stat-val">${Storage.formatINR(entry.buyRate)}</div>
+          </div>
+          <div>
+            <div class="m-stat-label">Total Cost</div>
+            <div class="m-stat-val">${Storage.formatINR(entry.totalCost)}</div>
+          </div>
+        </div>
+        ${entry.notes ? `<div class="m-card-sub" style="margin-bottom: 8px;">Note: ${escapeHtml(entry.notes)}</div>` : ''}
+        <div class="m-card-actions">
+          <button type="button" class="btn btn-sm btn-danger delete-sin-btn" data-id="${escapeHtml(entry.id)}">Delete Entry</button>
+        </div>
+      </div>
     `).join('');
   }
 
@@ -468,26 +579,26 @@
       return `
         <div class="bill-row-card" data-row-id="${escapeHtml(row.rowId)}">
           <div class="bill-row-grid">
-            <div class="form-group">
+            <div class="form-group bill-cell-item">
               <label class="form-label">आइटम #${idx + 1} / Item</label>
               <select class="form-control bill-item-select" data-row-id="${escapeHtml(row.rowId)}">
                 ${optionsHtml}
               </select>
               ${item ? `<div class="stock-hint">उपलब्ध स्टॉक / Available: ${Storage.formatQty(available)} ${escapeHtml(item.unit)}</div>` : ''}
             </div>
-            <div class="form-group">
+            <div class="form-group bill-cell-qty">
               <label class="form-label">Qty</label>
-              <input type="number" class="form-control tabular bill-qty-input" data-row-id="${escapeHtml(row.rowId)}" step="any" min="0.001" value="${escapeHtml(row.qty)}">
+              <input type="number" class="form-control tabular bill-qty-input" inputmode="decimal" data-row-id="${escapeHtml(row.rowId)}" step="any" min="0.001" value="${escapeHtml(row.qty)}">
             </div>
-            <div class="form-group">
+            <div class="form-group bill-cell-rate">
               <label class="form-label">Rate (₹)</label>
-              <input type="number" class="form-control tabular bill-rate-input" data-row-id="${escapeHtml(row.rowId)}" step="any" min="0" value="${escapeHtml(row.rate)}">
+              <input type="number" class="form-control tabular bill-rate-input" inputmode="decimal" data-row-id="${escapeHtml(row.rowId)}" step="any" min="0" value="${escapeHtml(row.rate)}">
             </div>
-            <div class="form-group">
+            <div class="form-group bill-cell-amount">
               <label class="form-label">Amount</label>
               <input type="text" class="form-control tabular bill-amount-display" value="${Storage.formatINR(lineAmount)}" readonly>
             </div>
-            <div class="form-group">
+            <div class="form-group bill-cell-remove">
               <button type="button" class="btn btn-danger bill-remove-row-btn" data-row-id="${escapeHtml(row.rowId)}" title="Remove Row">&times;</button>
             </div>
           </div>
@@ -613,8 +724,10 @@
     });
 
     const tbody = document.getElementById('bill-history-tbody');
+    const cardsEl = document.getElementById('bill-history-cards');
     if (!list.length) {
       tbody.innerHTML = '<tr><td colspan="7" class="empty-state">अभी कोई बिल रिकॉर्ड नहीं है।</td></tr>';
+      cardsEl.innerHTML = '<div class="empty-state">अभी कोई बिल रिकॉर्ड नहीं है।</div>';
       return;
     }
 
@@ -637,6 +750,34 @@
           </div>
         </td>
       </tr>
+    `).join('');
+
+    cardsEl.innerHTML = list.map((bill) => `
+      <div class="m-card">
+        <div class="m-card-head">
+          <div>
+            <span class="badge badge-navy">${escapeHtml(bill.billNo)}</span>
+            <h4 class="m-card-title" style="margin-top: 4px;">${escapeHtml(bill.customerName)}</h4>
+            <div class="m-card-sub">${escapeHtml(bill.date)}${bill.customerPhone ? ' • ' + escapeHtml(bill.customerPhone) : ''}</div>
+          </div>
+          <span class="badge badge-teal">${escapeHtml(bill.paymentMode)}</span>
+        </div>
+        <div class="m-card-stats" style="grid-template-columns: repeat(2, 1fr);">
+          <div>
+            <div class="m-stat-label">Items</div>
+            <div class="m-stat-val">${(bill.items || []).length}</div>
+          </div>
+          <div>
+            <div class="m-stat-label">Grand Total</div>
+            <div class="m-stat-val">${Storage.formatINR(bill.grandTotal)}</div>
+          </div>
+        </div>
+        <div class="m-card-actions">
+          <button type="button" class="btn btn-sm btn-outline view-bill-btn" data-id="${escapeHtml(bill.id)}">View</button>
+          <button type="button" class="btn btn-sm btn-navy pdf-bill-btn" data-id="${escapeHtml(bill.id)}">PDF</button>
+          <button type="button" class="btn btn-sm btn-danger delete-bill-btn" data-id="${escapeHtml(bill.id)}">Delete</button>
+        </div>
+      </div>
     `).join('');
   }
 
@@ -808,8 +949,8 @@
       if (typeof cb === 'function') cb();
     });
 
-    // Dashboard Quick Stock In button
-    document.getElementById('dashboard-stock-tbody').addEventListener('click', (e) => {
+    // Dashboard Quick Stock In button (works for both desktop table & mobile cards)
+    document.getElementById('view-dashboard').addEventListener('click', (e) => {
       const btn = e.target.closest('.quick-stock-in-btn');
       if (!btn) return;
       const itemId = btn.getAttribute('data-item-id');
@@ -823,10 +964,10 @@
     document.getElementById('inv-category-filter').addEventListener('change', renderInventory);
     document.getElementById('inv-status-filter').addEventListener('change', renderInventory);
 
-    // Add / Edit / Delete Inventory Item
+    // Add / Edit / Delete Inventory Item (works for both desktop table & mobile cards)
     document.getElementById('open-add-item-btn').addEventListener('click', () => openItemModal(null));
 
-    document.getElementById('inventory-tbody').addEventListener('click', (e) => {
+    document.getElementById('view-inventory').addEventListener('click', (e) => {
       const editBtn = e.target.closest('.edit-item-btn');
       if (editBtn) {
         const item = state.inventory.find((i) => i.id === editBtn.getAttribute('data-id'));
@@ -967,7 +1108,7 @@
       showToast(`${item.name} में +${Storage.formatQty(qty)} ${item.unit} स्टॉक जुड़ गया!`, 'success');
     });
 
-    document.getElementById('sin-history-tbody').addEventListener('click', (e) => {
+    document.getElementById('view-stock-in').addEventListener('click', (e) => {
       const btn = e.target.closest('.delete-sin-btn');
       if (!btn) return;
       const entryId = btn.getAttribute('data-id');
@@ -1120,7 +1261,7 @@
     document.getElementById('history-search').addEventListener('input', renderBillHistory);
     document.getElementById('history-payment-filter').addEventListener('change', renderBillHistory);
 
-    document.getElementById('bill-history-tbody').addEventListener('click', (e) => {
+    document.getElementById('view-history').addEventListener('click', (e) => {
       const viewBtn = e.target.closest('.view-bill-btn');
       if (viewBtn) {
         const bill = state.billHistory.find((b) => b.id === viewBtn.getAttribute('data-id'));
