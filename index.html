@@ -90,8 +90,12 @@
         </div>
 
         <div class="header-actions">
+          <button type="button" id="header-backup-btn" class="btn btn-sm header-backup-btn" title="JSON बैकअप तुरंत डाउनलोड करें / Download JSON Backup">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Backup</span>
+          </button>
           <button type="button" id="pwa-install-btn" class="btn btn-sm btn-primary hidden">
-            ऐप इंस्टॉल करें
+            इंस्टॉल
           </button>
           <span id="network-status-pill" class="status-pill" title="Offline Ready Status">
             <span class="status-dot"></span>
@@ -112,6 +116,14 @@
               <button type="button" class="btn btn-primary" data-jump="billing">+ नया बिल / New Bill</button>
               <button type="button" class="btn btn-outline" data-jump="stock-in">+ माल जोड़ें / Stock In</button>
             </div>
+          </div>
+
+          <div id="dashboard-low-alert-strip" class="alert-focus-banner hidden">
+            <div>
+              <div id="dashboard-alert-title" class="alert-focus-text">⚠ ध्यान दें: कम स्टॉक अलर्ट!</div>
+              <div id="dashboard-alert-sub" class="alert-focus-sub">इन आइटम्स का माल जल्द मंगाएं</div>
+            </div>
+            <button type="button" id="jump-low-stock-btn" class="btn btn-sm btn-danger-solid">कम स्टॉक देखें</button>
           </div>
 
           <div class="kpi-grid">
@@ -154,10 +166,42 @@
             </div>
           </div>
 
-          <div class="card">
+          <!-- System 1: Low & Out of Stock Focus -->
+          <div id="dashboard-low-card" class="card card-low-focus">
             <div class="card-header">
-              <h3 class="card-title">लाइव स्टॉक ट्रैकर / Live Stock Tracker</h3>
-              <button type="button" class="btn btn-sm btn-outline" data-jump="inventory">सभी आइटम देखें</button>
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <h3 class="card-title" style="color: var(--danger-text);">⚠ कम और खत्म स्टॉक / Low &amp; Out of Stock</h3>
+                <span id="dashboard-low-badge" class="badge badge-danger">0</span>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline" id="dash-view-low-inv-btn">Inventory में देखें</button>
+            </div>
+            <div class="table-wrap desktop-only-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Code</th>
+                    <th>आइटम / Item Name</th>
+                    <th>श्रेणी / Category</th>
+                    <th class="text-right">मौजूदा / Min Alert</th>
+                    <th class="text-right">बिक्री मूल्य / Sell</th>
+                    <th>स्टेटस / Status</th>
+                    <th class="text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-low-tbody"></tbody>
+              </table>
+            </div>
+            <div id="dashboard-low-cards" class="mobile-card-list"></div>
+          </div>
+
+          <!-- System 2: Full / Sufficient Stock -->
+          <div id="dashboard-full-card" class="card card-full-focus">
+            <div class="card-header">
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <h3 class="card-title" style="color: var(--teal-dark);">✅ पूरा स्टॉक / Full Stock Items</h3>
+                <span id="dashboard-full-badge" class="badge badge-success">0</span>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline" id="dash-view-full-inv-btn">सभी आइटम देखें</button>
             </div>
             <div class="table-wrap desktop-only-table">
               <table>
@@ -172,10 +216,10 @@
                     <th class="text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody id="dashboard-stock-tbody"></tbody>
+                <tbody id="dashboard-full-tbody"></tbody>
               </table>
             </div>
-            <div id="dashboard-stock-cards" class="mobile-card-list"></div>
+            <div id="dashboard-full-cards" class="mobile-card-list"></div>
           </div>
         </section>
 
@@ -184,12 +228,26 @@
           <div class="page-head">
             <div>
               <h2 class="page-title">मास्टर स्टॉक लिस्ट / Inventory</h2>
-              <p class="page-desc">सभी आइटम जोड़ें, एडिट करें और स्टॉक की स्थिति देखें</p>
+              <p class="page-desc">कम स्टॉक और पूरा स्टॉक अलग-अलग सिस्टम में देखें, एडिट और री-स्टॉक करें</p>
             </div>
             <button type="button" id="open-add-item-btn" class="btn btn-primary">+ नया आइटम / Add Item</button>
           </div>
 
           <div class="card">
+            <div id="inv-system-tabs" class="stock-system-tabs" role="tablist" aria-label="Stock System Switcher">
+              <button type="button" class="stock-sys-tab active" data-stock-system="all">
+                <span>दोनों / All</span>
+              </button>
+              <button type="button" class="stock-sys-tab" data-stock-system="low_out">
+                <span>⚠ कम/खत्म</span>
+                <span id="inv-low-tab-count" class="sys-pill-count">0</span>
+              </button>
+              <button type="button" class="stock-sys-tab" data-stock-system="full">
+                <span>✅ पूरा स्टॉक</span>
+                <span id="inv-full-tab-count" class="sys-pill-count">0</span>
+              </button>
+            </div>
+
             <div class="filter-bar">
               <input type="search" id="inv-search" class="form-control" placeholder="आइटम नाम या कोड खोजें / Search name or code...">
               <select id="inv-category-filter" class="form-control">
@@ -197,12 +255,23 @@
               </select>
               <select id="inv-status-filter" class="form-control">
                 <option value="all">सभी स्टेटस / All Status</option>
-                <option value="in">In Stock / स्टॉक में</option>
-                <option value="low">Low Stock / कम स्टॉक</option>
-                <option value="out">Out of Stock / खत्म</option>
+                <option value="low_out">कम और खत्म / Low &amp; Out</option>
+                <option value="in">पूरा स्टॉक / In Stock</option>
+                <option value="low">सिर्फ कम स्टॉक / Low Only</option>
+                <option value="out">सिर्फ खत्म / Out Only</option>
               </select>
             </div>
+          </div>
 
+          <!-- Inventory System 1: Low & Out Stock -->
+          <div id="inv-low-section" class="card card-low-focus">
+            <div class="card-header">
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <h3 class="card-title" style="color: var(--danger-text);">⚠ कम और खत्म स्टॉक / Low &amp; Out of Stock</h3>
+                <span id="inv-low-badge" class="badge badge-danger">0</span>
+              </div>
+              <span class="page-desc">Min Alert स्तर से कम या खत्म आइटम</span>
+            </div>
             <div class="table-wrap desktop-only-table">
               <table>
                 <thead>
@@ -216,16 +285,50 @@
                     <th class="text-right">Open</th>
                     <th class="text-right">In (+)</th>
                     <th class="text-right">Out (-)</th>
-                    <th class="text-right">Stock</th>
+                    <th class="text-right">Stock (Min)</th>
                     <th>Status</th>
                     <th class="text-right">Value (₹)</th>
                     <th class="text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody id="inventory-tbody"></tbody>
+                <tbody id="inv-low-tbody"></tbody>
               </table>
             </div>
-            <div id="inventory-cards" class="mobile-card-list"></div>
+            <div id="inv-low-cards" class="mobile-card-list"></div>
+          </div>
+
+          <!-- Inventory System 2: Full Stock -->
+          <div id="inv-full-section" class="card card-full-focus">
+            <div class="card-header">
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <h3 class="card-title" style="color: var(--teal-dark);">✅ पूरा / पर्याप्त स्टॉक / Full Stock</h3>
+                <span id="inv-full-badge" class="badge badge-success">0</span>
+              </div>
+              <span class="page-desc">पर्याप्त मात्रा में उपलब्ध आइटम</span>
+            </div>
+            <div class="table-wrap desktop-only-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Code</th>
+                    <th>आइटम / Item Name</th>
+                    <th>श्रेणी / Category</th>
+                    <th>Unit</th>
+                    <th class="text-right">Buy (₹)</th>
+                    <th class="text-right">Sell (₹)</th>
+                    <th class="text-right">Open</th>
+                    <th class="text-right">In (+)</th>
+                    <th class="text-right">Out (-)</th>
+                    <th class="text-right">Stock (Min)</th>
+                    <th>Status</th>
+                    <th class="text-right">Value (₹)</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="inv-full-tbody"></tbody>
+              </table>
+            </div>
+            <div id="inv-full-cards" class="mobile-card-list"></div>
           </div>
         </section>
 
@@ -423,8 +526,38 @@
         <section id="view-settings" class="view-section" aria-label="Settings and Backup">
           <div class="page-head">
             <div>
-              <h2 class="page-title">दुकान की सेटिंग्स और बैकअप / Settings &amp; Backup</h2>
-              <p class="page-desc">दुकान का विवरण, लोगो, JSON/Excel बैकअप और PWA ऐप सेटिंग्स</p>
+              <h2 class="page-title">बैकअप और दुकान की सेटिंग्स / Backup &amp; Settings</h2>
+              <p class="page-desc">JSON/Excel बैकअप, दुकान का विवरण, लोगो और PWA ऐप सेटिंग्स</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title" style="margin-bottom: 12px;">(G) बैकअप, एक्सपोर्ट और इम्पोर्ट / Backup, Export &amp; Import</h3>
+            <div class="backup-grid">
+              <div class="backup-box">
+                <div>
+                  <strong style="color: var(--navy);">Export to JSON (Full Backup)</strong>
+                  <p class="page-desc">दुकान सेटिंग्स, लोगो, स्टॉक, खरीद और बिलों का पूरा बैकअप (.json) डाउनलोड करें।</p>
+                </div>
+                <button type="button" id="export-json-btn" class="btn btn-navy">JSON बैकअप डाउनलोड</button>
+              </div>
+
+              <div class="backup-box">
+                <div>
+                  <strong style="color: var(--navy);">Import from JSON (Full Restore)</strong>
+                  <p class="page-desc">पहले से सेव की गई .json बैकअप फाइल से पूरा डेटा वापस रिस्टोर करें।</p>
+                </div>
+                <input type="file" id="import-json-input" accept=".json,application/json" class="hidden">
+                <button type="button" id="import-json-btn" class="btn btn-outline">JSON फाइल इम्पोर्ट करें</button>
+              </div>
+
+              <div class="backup-box">
+                <div>
+                  <strong style="color: var(--navy);">Export to Excel (.xlsx)</strong>
+                  <p class="page-desc">4 शीट (Summary, Inventory, Stock In, Bill History) वाली Excel रिपोर्ट पाएं।</p>
+                </div>
+                <button type="button" id="export-excel-btn" class="btn btn-primary">Excel (.xlsx) डाउनलोड</button>
+              </div>
             </div>
           </div>
 
@@ -466,36 +599,6 @@
                 <button type="submit" class="btn btn-primary">सेटिंग्स सेव करें / Save Settings</button>
               </div>
             </form>
-          </div>
-
-          <div class="card">
-            <h3 class="card-title" style="margin-bottom: 12px;">(G) बैकअप, एक्सपोर्ट और इम्पोर्ट / Backup, Export &amp; Import</h3>
-            <div class="backup-grid">
-              <div class="backup-box">
-                <div>
-                  <strong style="color: var(--navy);">Export to JSON (Full Backup)</strong>
-                  <p class="page-desc">दुकान सेटिंग्स, लोगो, स्टॉक, खरीद और बिलों का पूरा बैकअप (.json) डाउनलोड करें।</p>
-                </div>
-                <button type="button" id="export-json-btn" class="btn btn-navy">JSON बैकअप डाउनलोड</button>
-              </div>
-
-              <div class="backup-box">
-                <div>
-                  <strong style="color: var(--navy);">Import from JSON (Full Restore)</strong>
-                  <p class="page-desc">पहले से सेव की गई .json बैकअप फाइल से पूरा डेटा वापस रिस्टोर करें।</p>
-                </div>
-                <input type="file" id="import-json-input" accept=".json,application/json" class="hidden">
-                <button type="button" id="import-json-btn" class="btn btn-outline">JSON फाइल इम्पोर्ट करें</button>
-              </div>
-
-              <div class="backup-box">
-                <div>
-                  <strong style="color: var(--navy);">Export to Excel (.xlsx)</strong>
-                  <p class="page-desc">4 शीट (Summary, Inventory, Stock In, Bill History) वाली Excel रिपोर्ट पाएं।</p>
-                </div>
-                <button type="button" id="export-excel-btn" class="btn btn-primary">Excel (.xlsx) डाउनलोड</button>
-              </div>
-            </div>
           </div>
 
           <div class="card">

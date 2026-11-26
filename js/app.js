@@ -13,6 +13,16 @@
   let pendingConfirmCallback = null;
   let activeViewBillId = null;
   let deferredInstallPrompt = null;
+  let activeStockSystem = 'all';
+
+  function isUrgentStock(item) {
+    const key = Storage.getStockStatus(item).key;
+    return key === 'low' || key === 'out';
+  }
+
+  function sortUrgentFirst(items) {
+    return [...items].sort((a, b) => Storage.getCurrentStock(a) - Storage.getCurrentStock(b));
+  }
 
   function escapeHtml(str) {
     return String(str == null ? '' : str)
@@ -187,6 +197,57 @@
   // =========================================================
   // (B) DASHBOARD
   // =========================================================
+  function buildDashboardRowHtml(item, showMinAlert) {
+    const current = Storage.getCurrentStock(item);
+    const st = Storage.getStockStatus(item);
+    const stockCell = showMinAlert
+      ? `<strong>${Storage.formatQty(current)}</strong> ${escapeHtml(item.unit)} <span style="font-size: 0.75rem; color: var(--text-soft);">(Min: ${Storage.formatQty(item.minAlertLevel)})</span>`
+      : `<strong>${Storage.formatQty(current)}</strong> ${escapeHtml(item.unit)}`;
+    return `
+      <tr>
+        <td><span class="badge badge-navy">${escapeHtml(item.code)}</span></td>
+        <td><strong>${escapeHtml(item.name)}</strong></td>
+        <td>${escapeHtml(item.category)}</td>
+        <td class="text-right tabular">${stockCell}</td>
+        <td class="text-right tabular">${Storage.formatINR(item.sellPrice)}</td>
+        <td><span class="badge ${st.badgeClass}">${escapeHtml(st.label)}</span></td>
+        <td class="text-right">
+          <button type="button" class="btn btn-sm ${showMinAlert ? 'btn-primary' : 'btn-outline'} quick-stock-in-btn" data-item-id="${escapeHtml(item.id)}">+ Stock</button>
+        </td>
+      </tr>
+    `;
+  }
+
+  function buildDashboardCardHtml(item, isUrgent) {
+    const current = Storage.getCurrentStock(item);
+    const st = Storage.getStockStatus(item);
+    return `
+      <div class="m-card${isUrgent ? ' is-urgent' : ''}">
+        <div class="m-card-head">
+          <div>
+            <span class="badge badge-navy">${escapeHtml(item.code)}</span>
+            <h4 class="m-card-title" style="margin-top: 4px;">${escapeHtml(item.name)}</h4>
+            <div class="m-card-sub">${escapeHtml(item.category)}${isUrgent ? ' • Min Alert: ' + Storage.formatQty(item.minAlertLevel) + ' ' + escapeHtml(item.unit) : ''}</div>
+          </div>
+          <span class="badge ${st.badgeClass}">${escapeHtml(st.shortLabel)}</span>
+        </div>
+        <div class="m-card-stats" style="grid-template-columns: repeat(2, 1fr);">
+          <div>
+            <div class="m-stat-label">मौजूदा स्टॉक / Stock</div>
+            <div class="m-stat-val">${Storage.formatQty(current)} ${escapeHtml(item.unit)}</div>
+          </div>
+          <div>
+            <div class="m-stat-label">बिक्री मूल्य / Sell Price</div>
+            <div class="m-stat-val">${Storage.formatINR(item.sellPrice)}</div>
+          </div>
+        </div>
+        <div class="m-card-actions">
+          <button type="button" class="btn btn-sm ${isUrgent ? 'btn-primary' : 'btn-outline'} quick-stock-in-btn" data-item-id="${escapeHtml(item.id)}">+ माल जोड़ें / Stock In</button>
+        </div>
+      </div>
+    `;
+  }
+
   function renderDashboard() {
     const metrics = Storage.computeMetrics(state);
     document.getElementById('kpi-total-products').textContent = String(metrics.totalProducts);
@@ -208,60 +269,46 @@
       }
     });
 
-    const tbody = document.getElementById('dashboard-stock-tbody');
-    const cardsEl = document.getElementById('dashboard-stock-cards');
-    if (!state.inventory.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">अभी कोई आइटम नहीं है। Inventory टैब में नया आइटम जोड़ें।</td></tr>';
-      cardsEl.innerHTML = '<div class="empty-state">अभी कोई आइटम नहीं है। स्टॉक टैब में नया आइटम जोड़ें।</div>';
-    } else {
-      const sorted = [...state.inventory].sort((a, b) => Storage.getCurrentStock(a) - Storage.getCurrentStock(b));
-      tbody.innerHTML = sorted.map((item) => {
-        const current = Storage.getCurrentStock(item);
-        const st = Storage.getStockStatus(item);
-        return `
-          <tr>
-            <td><span class="badge badge-navy">${escapeHtml(item.code)}</span></td>
-            <td><strong>${escapeHtml(item.name)}</strong></td>
-            <td>${escapeHtml(item.category)}</td>
-            <td class="text-right tabular"><strong>${Storage.formatQty(current)}</strong> ${escapeHtml(item.unit)}</td>
-            <td class="text-right tabular">${Storage.formatINR(item.sellPrice)}</td>
-            <td><span class="badge ${st.badgeClass}">${escapeHtml(st.label)}</span></td>
-            <td class="text-right">
-              <button type="button" class="btn btn-sm btn-outline quick-stock-in-btn" data-item-id="${escapeHtml(item.id)}">+ Stock</button>
-            </td>
-          </tr>
-        `;
-      }).join('');
+    const lowItems = sortUrgentFirst(state.inventory.filter(isUrgentStock));
+    const fullItems = sortUrgentFirst(state.inventory.filter((it) => !isUrgentStock(it)));
 
-      cardsEl.innerHTML = sorted.map((item) => {
-        const current = Storage.getCurrentStock(item);
-        const st = Storage.getStockStatus(item);
-        return `
-          <div class="m-card">
-            <div class="m-card-head">
-              <div>
-                <span class="badge badge-navy">${escapeHtml(item.code)}</span>
-                <h4 class="m-card-title" style="margin-top: 4px;">${escapeHtml(item.name)}</h4>
-                <div class="m-card-sub">${escapeHtml(item.category)}</div>
-              </div>
-              <span class="badge ${st.badgeClass}">${escapeHtml(st.shortLabel)}</span>
-            </div>
-            <div class="m-card-stats" style="grid-template-columns: repeat(2, 1fr);">
-              <div>
-                <div class="m-stat-label">मौजूदा स्टॉक / Stock</div>
-                <div class="m-stat-val">${Storage.formatQty(current)} ${escapeHtml(item.unit)}</div>
-              </div>
-              <div>
-                <div class="m-stat-label">बिक्री मूल्य / Sell Price</div>
-                <div class="m-stat-val">${Storage.formatINR(item.sellPrice)}</div>
-              </div>
-            </div>
-            <div class="m-card-actions">
-              <button type="button" class="btn btn-sm btn-outline quick-stock-in-btn" data-item-id="${escapeHtml(item.id)}">+ माल जोड़ें / Stock In</button>
-            </div>
-          </div>
-        `;
-      }).join('');
+    // Priority alert banner at top of dashboard
+    const alertStrip = document.getElementById('dashboard-low-alert-strip');
+    if (alertCount > 0) {
+      document.getElementById('dashboard-alert-title').textContent =
+        `⚠ ध्यान दें: ${alertCount} आइटम कम या खत्म स्टॉक में हैं! (${metrics.outOfStockCount} खत्म, ${metrics.lowStockCount} कम)`;
+      document.getElementById('dashboard-alert-sub').textContent =
+        lowItems.slice(0, 3).map((i) => `${i.name} (${Storage.formatQty(Storage.getCurrentStock(i))})`).join(' • ');
+      alertStrip.classList.remove('hidden');
+    } else {
+      alertStrip.classList.add('hidden');
+    }
+
+    document.getElementById('dashboard-low-badge').textContent = `${lowItems.length} आइटम`;
+    document.getElementById('dashboard-full-badge').textContent = `${fullItems.length} आइटम`;
+
+    const lowTbody = document.getElementById('dashboard-low-tbody');
+    const lowCards = document.getElementById('dashboard-low-cards');
+    if (!lowItems.length) {
+      const msg = state.inventory.length
+        ? '✅ बढ़िया! अभी कोई कम या खत्म स्टॉक आइटम नहीं है।'
+        : 'अभी कोई आइटम नहीं है। Inventory टैब में नया आइटम जोड़ें।';
+      lowTbody.innerHTML = `<tr><td colspan="7" class="empty-state">${msg}</td></tr>`;
+      lowCards.innerHTML = `<div class="empty-state">${msg}</div>`;
+    } else {
+      lowTbody.innerHTML = lowItems.map((it) => buildDashboardRowHtml(it, true)).join('');
+      lowCards.innerHTML = lowItems.map((it) => buildDashboardCardHtml(it, true)).join('');
+    }
+
+    const fullTbody = document.getElementById('dashboard-full-tbody');
+    const fullCards = document.getElementById('dashboard-full-cards');
+    if (!fullItems.length) {
+      const msg = 'पूरा स्टॉक श्रेणी में अभी कोई आइटम नहीं है।';
+      fullTbody.innerHTML = `<tr><td colspan="7" class="empty-state">${msg}</td></tr>`;
+      fullCards.innerHTML = `<div class="empty-state">${msg}</div>`;
+    } else {
+      fullTbody.innerHTML = fullItems.map((it) => buildDashboardRowHtml(it, false)).join('');
+      fullCards.innerHTML = fullItems.map((it) => buildDashboardCardHtml(it, false)).join('');
     }
 
     renderDashboardChart();
@@ -357,93 +404,150 @@
     sel.value = categories.includes(prev) ? prev : 'all';
   }
 
+  function setInventorySystem(sys) {
+    activeStockSystem = sys || 'all';
+    document.querySelectorAll('.stock-sys-tab').forEach((btn) => {
+      btn.classList.toggle('active', btn.getAttribute('data-stock-system') === activeStockSystem);
+    });
+    const statusSel = document.getElementById('inv-status-filter');
+    if (activeStockSystem === 'low_out' && statusSel.value !== 'low' && statusSel.value !== 'out') {
+      statusSel.value = 'low_out';
+    } else if (activeStockSystem === 'full') {
+      statusSel.value = 'in';
+    } else if (activeStockSystem === 'all' && (statusSel.value === 'low_out' || statusSel.value === 'in')) {
+      statusSel.value = 'all';
+    }
+    renderInventory();
+  }
+
+  function buildInventoryRowHtml(item, isUrgent) {
+    const current = Storage.getCurrentStock(item);
+    const status = Storage.getStockStatus(item);
+    const value = Storage.getStockValue(item);
+    return `
+      <tr>
+        <td><span class="badge badge-navy">${escapeHtml(item.code)}</span></td>
+        <td><strong>${escapeHtml(item.name)}</strong></td>
+        <td>${escapeHtml(item.category)}</td>
+        <td>${escapeHtml(item.unit)}</td>
+        <td class="text-right tabular">${Storage.formatINR(item.buyPrice)}</td>
+        <td class="text-right tabular">${Storage.formatINR(item.sellPrice)}</td>
+        <td class="text-right tabular">${Storage.formatQty(item.openingStock)}</td>
+        <td class="text-right tabular" style="color: var(--success-text);">+${Storage.formatQty(item.stockIn)}</td>
+        <td class="text-right tabular" style="color: var(--danger-text);">-${Storage.formatQty(item.stockOut)}</td>
+        <td class="text-right tabular"><strong>${Storage.formatQty(current)}</strong> <span style="font-size: 0.72rem; color: var(--text-soft);">(${Storage.formatQty(item.minAlertLevel)})</span></td>
+        <td><span class="badge ${status.badgeClass}">${escapeHtml(status.shortLabel)}</span></td>
+        <td class="text-right tabular">${Storage.formatINR(value)}</td>
+        <td class="text-right">
+          <div class="action-group">
+            <button type="button" class="btn btn-sm ${isUrgent ? 'btn-primary' : 'btn-outline'} quick-stock-in-btn" data-item-id="${escapeHtml(item.id)}">+ Stock</button>
+            <button type="button" class="btn btn-sm btn-outline edit-item-btn" data-id="${escapeHtml(item.id)}">Edit</button>
+            <button type="button" class="btn btn-sm btn-danger delete-item-btn" data-id="${escapeHtml(item.id)}">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+
+  function buildInventoryCardHtml(item, isUrgent) {
+    const current = Storage.getCurrentStock(item);
+    const status = Storage.getStockStatus(item);
+    const value = Storage.getStockValue(item);
+    return `
+      <div class="m-card${isUrgent ? ' is-urgent' : ''}">
+        <div class="m-card-head">
+          <div>
+            <span class="badge badge-navy">${escapeHtml(item.code)}</span>
+            <h4 class="m-card-title" style="margin-top: 4px;">${escapeHtml(item.name)}</h4>
+            <div class="m-card-sub">${escapeHtml(item.category)} • Min: ${Storage.formatQty(item.minAlertLevel)} | In: +${Storage.formatQty(item.stockIn)} | Out: -${Storage.formatQty(item.stockOut)}</div>
+          </div>
+          <span class="badge ${status.badgeClass}">${escapeHtml(status.shortLabel)}</span>
+        </div>
+        <div class="m-card-stats">
+          <div>
+            <div class="m-stat-label">Stock</div>
+            <div class="m-stat-val">${Storage.formatQty(current)} ${escapeHtml(item.unit)}</div>
+          </div>
+          <div>
+            <div class="m-stat-label">Buy / Sell</div>
+            <div class="m-stat-val">${Storage.formatINR(item.buyPrice)} / ${Storage.formatINR(item.sellPrice)}</div>
+          </div>
+          <div>
+            <div class="m-stat-label">Value</div>
+            <div class="m-stat-val">${Storage.formatINR(value)}</div>
+          </div>
+        </div>
+        <div class="m-card-actions">
+          <button type="button" class="btn btn-sm ${isUrgent ? 'btn-primary' : 'btn-outline'} quick-stock-in-btn" data-item-id="${escapeHtml(item.id)}">+ Stock</button>
+          <button type="button" class="btn btn-sm btn-outline edit-item-btn" data-id="${escapeHtml(item.id)}">Edit</button>
+          <button type="button" class="btn btn-sm btn-danger delete-item-btn" data-id="${escapeHtml(item.id)}">Delete</button>
+        </div>
+      </div>
+    `;
+  }
+
   function renderInventory() {
     renderInventoryCategoryFilter();
     const search = (document.getElementById('inv-search').value || '').trim().toLowerCase();
     const catFilter = document.getElementById('inv-category-filter').value;
     const statusFilter = document.getElementById('inv-status-filter').value;
 
-    const filtered = state.inventory.filter((item) => {
+    const matchesSearchAndCat = state.inventory.filter((item) => {
       const matchesSearch = !search ||
         item.name.toLowerCase().includes(search) ||
         item.code.toLowerCase().includes(search) ||
         item.category.toLowerCase().includes(search);
       const matchesCat = catFilter === 'all' || item.category === catFilter;
-      const matchesStatus = statusFilter === 'all' || Storage.getStockStatus(item).key === statusFilter;
-      return matchesSearch && matchesCat && matchesStatus;
+      return matchesSearch && matchesCat;
     });
 
-    const tbody = document.getElementById('inventory-tbody');
-    const cardsEl = document.getElementById('inventory-cards');
-    if (!filtered.length) {
-      tbody.innerHTML = '<tr><td colspan="13" class="empty-state">कोई आइटम नहीं मिला। "+ नया आइटम / Add Item" पर क्लिक करें।</td></tr>';
-      cardsEl.innerHTML = '<div class="empty-state">कोई आइटम नहीं मिला। "+ नया आइटम / Add Item" पर टैप करें।</div>';
-      return;
+    const filtered = matchesSearchAndCat.filter((item) => {
+      const key = Storage.getStockStatus(item).key;
+      if (statusFilter === 'low_out') return key === 'low' || key === 'out';
+      if (statusFilter !== 'all') return key === statusFilter;
+      if (activeStockSystem === 'low_out') return key === 'low' || key === 'out';
+      if (activeStockSystem === 'full') return key === 'in';
+      return true;
+    });
+
+    const lowItems = sortUrgentFirst(filtered.filter(isUrgentStock));
+    const fullItems = sortUrgentFirst(filtered.filter((it) => !isUrgentStock(it)));
+
+    const totalLowAll = state.inventory.filter(isUrgentStock).length;
+    const totalFullAll = state.inventory.length - totalLowAll;
+    document.getElementById('inv-low-tab-count').textContent = String(totalLowAll);
+    document.getElementById('inv-full-tab-count').textContent = String(totalFullAll);
+    document.getElementById('inv-low-badge').textContent = `${lowItems.length} आइटम`;
+    document.getElementById('inv-full-badge').textContent = `${fullItems.length} आइटम`;
+
+    const showLowSection = activeStockSystem !== 'full' && statusFilter !== 'in';
+    const showFullSection = activeStockSystem !== 'low_out' && statusFilter !== 'low_out' && statusFilter !== 'low' && statusFilter !== 'out';
+    document.getElementById('inv-low-section').classList.toggle('hidden', !showLowSection);
+    document.getElementById('inv-full-section').classList.toggle('hidden', !showFullSection);
+
+    const lowTbody = document.getElementById('inv-low-tbody');
+    const lowCards = document.getElementById('inv-low-cards');
+    if (!lowItems.length) {
+      const msg = state.inventory.length
+        ? '✅ इस फ़िल्टर में कोई कम या खत्म स्टॉक आइटम नहीं है।'
+        : 'कोई आइटम नहीं मिला। "+ नया आइटम / Add Item" पर क्लिक करें।';
+      lowTbody.innerHTML = `<tr><td colspan="13" class="empty-state">${msg}</td></tr>`;
+      lowCards.innerHTML = `<div class="empty-state">${msg}</div>`;
+    } else {
+      lowTbody.innerHTML = lowItems.map((it) => buildInventoryRowHtml(it, true)).join('');
+      lowCards.innerHTML = lowItems.map((it) => buildInventoryCardHtml(it, true)).join('');
     }
 
-    tbody.innerHTML = filtered.map((item) => {
-      const current = Storage.getCurrentStock(item);
-      const status = Storage.getStockStatus(item);
-      const value = Storage.getStockValue(item);
-      return `
-        <tr>
-          <td><span class="badge badge-navy">${escapeHtml(item.code)}</span></td>
-          <td><strong>${escapeHtml(item.name)}</strong></td>
-          <td>${escapeHtml(item.category)}</td>
-          <td>${escapeHtml(item.unit)}</td>
-          <td class="text-right tabular">${Storage.formatINR(item.buyPrice)}</td>
-          <td class="text-right tabular">${Storage.formatINR(item.sellPrice)}</td>
-          <td class="text-right tabular">${Storage.formatQty(item.openingStock)}</td>
-          <td class="text-right tabular" style="color: var(--success-text);">+${Storage.formatQty(item.stockIn)}</td>
-          <td class="text-right tabular" style="color: var(--danger-text);">-${Storage.formatQty(item.stockOut)}</td>
-          <td class="text-right tabular"><strong>${Storage.formatQty(current)}</strong></td>
-          <td><span class="badge ${status.badgeClass}">${escapeHtml(status.shortLabel)}</span></td>
-          <td class="text-right tabular">${Storage.formatINR(value)}</td>
-          <td class="text-right">
-            <div class="action-group">
-              <button type="button" class="btn btn-sm btn-outline edit-item-btn" data-id="${escapeHtml(item.id)}">Edit</button>
-              <button type="button" class="btn btn-sm btn-danger delete-item-btn" data-id="${escapeHtml(item.id)}">Delete</button>
-            </div>
-          </td>
-        </tr>
-      `;
-    }).join('');
-
-    cardsEl.innerHTML = filtered.map((item) => {
-      const current = Storage.getCurrentStock(item);
-      const status = Storage.getStockStatus(item);
-      const value = Storage.getStockValue(item);
-      return `
-        <div class="m-card">
-          <div class="m-card-head">
-            <div>
-              <span class="badge badge-navy">${escapeHtml(item.code)}</span>
-              <h4 class="m-card-title" style="margin-top: 4px;">${escapeHtml(item.name)}</h4>
-              <div class="m-card-sub">${escapeHtml(item.category)} • Open: ${Storage.formatQty(item.openingStock)} | In: +${Storage.formatQty(item.stockIn)} | Out: -${Storage.formatQty(item.stockOut)}</div>
-            </div>
-            <span class="badge ${status.badgeClass}">${escapeHtml(status.shortLabel)}</span>
-          </div>
-          <div class="m-card-stats">
-            <div>
-              <div class="m-stat-label">Stock</div>
-              <div class="m-stat-val">${Storage.formatQty(current)} ${escapeHtml(item.unit)}</div>
-            </div>
-            <div>
-              <div class="m-stat-label">Buy / Sell</div>
-              <div class="m-stat-val">${Storage.formatINR(item.buyPrice)} / ${Storage.formatINR(item.sellPrice)}</div>
-            </div>
-            <div>
-              <div class="m-stat-label">Value</div>
-              <div class="m-stat-val">${Storage.formatINR(value)}</div>
-            </div>
-          </div>
-          <div class="m-card-actions">
-            <button type="button" class="btn btn-sm btn-outline edit-item-btn" data-id="${escapeHtml(item.id)}">Edit</button>
-            <button type="button" class="btn btn-sm btn-danger delete-item-btn" data-id="${escapeHtml(item.id)}">Delete</button>
-          </div>
-        </div>
-      `;
-    }).join('');
+    const fullTbody = document.getElementById('inv-full-tbody');
+    const fullCards = document.getElementById('inv-full-cards');
+    if (!fullItems.length) {
+      const msg = 'पूरा स्टॉक श्रेणी में अभी कोई आइटम नहीं मिला।';
+      fullTbody.innerHTML = `<tr><td colspan="13" class="empty-state">${msg}</td></tr>`;
+      fullCards.innerHTML = `<div class="empty-state">${msg}</div>`;
+    } else {
+      fullTbody.innerHTML = fullItems.map((it) => buildInventoryRowHtml(it, false)).join('');
+      fullCards.innerHTML = fullItems.map((it) => buildInventoryCardHtml(it, false)).join('');
+    }
   }
 
   function openItemModal(itemToEdit) {
@@ -974,6 +1078,30 @@
       if (typeof cb === 'function') cb();
     });
 
+    // Header direct 1-click JSON Backup button
+    document.getElementById('header-backup-btn').addEventListener('click', () => {
+      try {
+        const file = Export.exportToJSON(state);
+        showToast(`पूरा JSON बैकअप ${file} डिवाइस में सेव हो गया!`, 'success');
+      } catch (err) {
+        console.error(err);
+        showToast('बैकअप डाउनलोड करने में त्रुटि आई।', 'error');
+      }
+    });
+
+    // Dashboard alert jump & section shortcuts
+    document.getElementById('jump-low-stock-btn').addEventListener('click', () => {
+      document.getElementById('dashboard-low-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    document.getElementById('dash-view-low-inv-btn').addEventListener('click', () => {
+      switchView('inventory');
+      setInventorySystem('low_out');
+    });
+    document.getElementById('dash-view-full-inv-btn').addEventListener('click', () => {
+      switchView('inventory');
+      setInventorySystem('full');
+    });
+
     // Dashboard Quick Stock In button (works for both desktop table & mobile cards)
     document.getElementById('view-dashboard').addEventListener('click', (e) => {
       const btn = e.target.closest('.quick-stock-in-btn');
@@ -984,15 +1112,41 @@
       document.getElementById('sin-qty').focus();
     });
 
-    // Inventory filters
+    // Inventory two-system tabs & filters
+    document.getElementById('inv-system-tabs').addEventListener('click', (e) => {
+      const tabBtn = e.target.closest('.stock-sys-tab');
+      if (!tabBtn) return;
+      setInventorySystem(tabBtn.getAttribute('data-stock-system'));
+    });
     document.getElementById('inv-search').addEventListener('input', renderInventory);
     document.getElementById('inv-category-filter').addEventListener('change', renderInventory);
-    document.getElementById('inv-status-filter').addEventListener('change', renderInventory);
+    document.getElementById('inv-status-filter').addEventListener('change', () => {
+      const val = document.getElementById('inv-status-filter').value;
+      if (val === 'low_out' || val === 'low' || val === 'out') {
+        activeStockSystem = 'low_out';
+      } else if (val === 'in') {
+        activeStockSystem = 'full';
+      } else {
+        activeStockSystem = 'all';
+      }
+      document.querySelectorAll('.stock-sys-tab').forEach((btn) => {
+        btn.classList.toggle('active', btn.getAttribute('data-stock-system') === activeStockSystem);
+      });
+      renderInventory();
+    });
 
-    // Add / Edit / Delete Inventory Item (works for both desktop table & mobile cards)
+    // Add / Edit / Delete / Quick-Stock Inventory Item (works for both desktop table & mobile cards)
     document.getElementById('open-add-item-btn').addEventListener('click', () => openItemModal(null));
 
     document.getElementById('view-inventory').addEventListener('click', (e) => {
+      const stockBtn = e.target.closest('.quick-stock-in-btn');
+      if (stockBtn) {
+        const itemId = stockBtn.getAttribute('data-item-id');
+        switchView('stock-in');
+        renderStockInDropdown(itemId);
+        document.getElementById('sin-qty').focus();
+        return;
+      }
       const editBtn = e.target.closest('.edit-item-btn');
       if (editBtn) {
         const item = state.inventory.find((i) => i.id === editBtn.getAttribute('data-id'));
