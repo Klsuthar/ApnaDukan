@@ -126,6 +126,57 @@
             <button type="button" id="jump-low-stock-btn" class="btn btn-sm btn-danger-solid">कम स्टॉक देखें</button>
           </div>
 
+          <!-- Simple Sales & Profit Period Overview -->
+          <div class="card period-summary-card">
+            <div class="period-head">
+              <div>
+                <h3 class="card-title">बिक्री और मुनाफा रिपोर्ट / Sales &amp; Profit</h3>
+                <div class="page-desc">आज (Current), 1 महीना (30 दिन), 1 साल और कुल बिक्री/मुनाफा देखें</div>
+              </div>
+              <div id="sales-period-tabs" class="period-tabs" role="tablist" aria-label="Sales Period">
+                <button type="button" class="period-tab-btn" data-period="today">आज / Today</button>
+                <button type="button" class="period-tab-btn" data-period="month">1 महीना</button>
+                <button type="button" class="period-tab-btn" data-period="year">1 साल</button>
+                <button type="button" class="period-tab-btn active" data-period="all">कुल / Total</button>
+              </div>
+            </div>
+
+            <div class="period-mini-grid">
+              <div class="period-mini-box" data-period-card="today">
+                <div class="period-mini-top">
+                  <span class="period-mini-label">आज / Today (Current)</span>
+                  <span id="p-today-bills" class="period-mini-bills">0 बिल</span>
+                </div>
+                <div class="period-mini-nums">
+                  <span>बिक्री: <strong id="p-today-sales" style="color: var(--navy);">₹0</strong></span>
+                  <span>मुनाफा: <strong id="p-today-profit" style="color: var(--teal-dark);">₹0</strong></span>
+                </div>
+              </div>
+
+              <div class="period-mini-box" data-period-card="month">
+                <div class="period-mini-top">
+                  <span class="period-mini-label">1 महीना / Last 30 Days</span>
+                  <span id="p-month-bills" class="period-mini-bills">0 बिल</span>
+                </div>
+                <div class="period-mini-nums">
+                  <span>बिक्री: <strong id="p-month-sales" style="color: var(--navy);">₹0</strong></span>
+                  <span>मुनाफा: <strong id="p-month-profit" style="color: var(--teal-dark);">₹0</strong></span>
+                </div>
+              </div>
+
+              <div class="period-mini-box active" data-period-card="all">
+                <div class="period-mini-top">
+                  <span class="period-mini-label">कुल / All Time Total</span>
+                  <span id="p-all-bills" class="period-mini-bills">0 बिल</span>
+                </div>
+                <div class="period-mini-nums">
+                  <span>बिक्री: <strong id="p-all-sales" style="color: var(--navy);">₹0</strong></span>
+                  <span>मुनाफा: <strong id="p-all-profit" style="color: var(--teal-dark);">₹0</strong></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="kpi-grid">
             <div class="kpi-card">
               <div class="kpi-label">कुल आइटम / Total Products</div>
@@ -136,11 +187,11 @@
               <div id="kpi-stock-value" class="kpi-value">₹0</div>
             </div>
             <div class="kpi-card success">
-              <div class="kpi-label">कुल बिक्री / Total Sales</div>
+              <div id="kpi-sales-label" class="kpi-label">कुल बिक्री / Total Sales</div>
               <div id="kpi-total-sales" class="kpi-value">₹0</div>
             </div>
             <div class="kpi-card teal">
-              <div class="kpi-label">अनुमानित मुनाफा / Est. Profit</div>
+              <div id="kpi-profit-label" class="kpi-label">अनुमानित मुनाफा / Est. Profit</div>
               <div id="kpi-est-profit" class="kpi-value">₹0</div>
             </div>
             <div class="kpi-card warning">

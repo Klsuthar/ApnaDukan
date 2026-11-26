@@ -168,26 +168,21 @@
     return roundMoney(current * (Number(item.buyPrice) || 0));
   }
 
-  function computeMetrics(state) {
-    const inventory = state.inventory || [];
-    const bills = state.billHistory || [];
-    const itemMap = new Map(inventory.map((it) => [it.id, it]));
+  function addDaysISO(baseIso, deltaDays) {
+    const parts = String(baseIso || getTodayISO()).split('-').map(Number);
+    const d = new Date(parts[0], (parts[1] || 1) - 1, (parts[2] || 1) + deltaDays);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + day;
+  }
 
-    let totalStockValue = 0;
-    let lowStockCount = 0;
-    let outOfStockCount = 0;
-
-    for (const item of inventory) {
-      totalStockValue += getStockValue(item);
-      const st = getStockStatus(item);
-      if (st.key === 'low') lowStockCount += 1;
-      else if (st.key === 'out') outOfStockCount += 1;
-    }
-
+  function computeSalesAndProfit(bills, inventory) {
+    const itemMap = new Map((inventory || []).map((it) => [it.id, it]));
     let totalSales = 0;
     let estProfit = 0;
 
-    for (const bill of bills) {
+    for (const bill of (bills || [])) {
       totalSales += Number(bill.grandTotal) || 0;
       let billGrossProfit = 0;
       for (const line of (bill.items || [])) {
@@ -203,10 +198,63 @@
     }
 
     return {
-      totalProducts: inventory.length,
-      totalStockValue: roundMoney(totalStockValue),
       totalSales: roundMoney(totalSales),
       estProfit: roundMoney(estProfit),
+      billCount: (bills || []).length
+    };
+  }
+
+  function filterBillsByPeriod(bills, period) {
+    const list = bills || [];
+    if (!period || period === 'all') return list;
+    const today = getTodayISO();
+    if (period === 'today') {
+      return list.filter((b) => b.date === today);
+    }
+    if (period === 'month') {
+      const start30 = addDaysISO(today, -29);
+      return list.filter((b) => b.date >= start30 && b.date <= today);
+    }
+    if (period === 'year') {
+      const start365 = addDaysISO(today, -364);
+      return list.filter((b) => b.date >= start365 && b.date <= today);
+    }
+    return list;
+  }
+
+  function computePeriodSummary(state) {
+    const inventory = state.inventory || [];
+    const bills = state.billHistory || [];
+    return {
+      today: computeSalesAndProfit(filterBillsByPeriod(bills, 'today'), inventory),
+      month: computeSalesAndProfit(filterBillsByPeriod(bills, 'month'), inventory),
+      year: computeSalesAndProfit(filterBillsByPeriod(bills, 'year'), inventory),
+      all: computeSalesAndProfit(bills, inventory)
+    };
+  }
+
+  function computeMetrics(state) {
+    const inventory = state.inventory || [];
+    const bills = state.billHistory || [];
+
+    let totalStockValue = 0;
+    let lowStockCount = 0;
+    let outOfStockCount = 0;
+
+    for (const item of inventory) {
+      totalStockValue += getStockValue(item);
+      const st = getStockStatus(item);
+      if (st.key === 'low') lowStockCount += 1;
+      else if (st.key === 'out') outOfStockCount += 1;
+    }
+
+    const sp = computeSalesAndProfit(bills, inventory);
+
+    return {
+      totalProducts: inventory.length,
+      totalStockValue: roundMoney(totalStockValue),
+      totalSales: sp.totalSales,
+      estProfit: sp.estProfit,
       lowStockCount,
       outOfStockCount
     };
@@ -379,6 +427,10 @@
     getStockStatus,
     getStockValue,
     computeMetrics,
+    computePeriodSummary,
+    computeSalesAndProfit,
+    filterBillsByPeriod,
+    addDaysISO,
     getNextItemCode,
     formatBillNo,
     formatINR,

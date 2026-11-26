@@ -383,6 +383,105 @@ button {
   background: #FFFBFB;
 }
 
+/* Sales & Profit Period Selector */
+.period-summary-card {
+  padding: 14px 16px;
+}
+
+.period-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.period-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+}
+
+.period-tab-btn {
+  padding: 7px 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: #F8FAFC;
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-align: center;
+  min-height: 36px;
+  transition: all 0.15s;
+}
+
+.period-tab-btn.active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #FFFFFF;
+}
+
+.period-mini-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.period-mini-box {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  background: #F8FAFC;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.period-mini-box.active {
+  border-color: var(--teal);
+  background: var(--teal-light);
+}
+
+.period-mini-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.period-mini-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.period-mini-bills {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.period-mini-nums {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.86rem;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 640px) {
+  .period-tabs {
+    width: auto;
+    min-width: 340px;
+  }
+  .period-mini-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 /* KPI Grid */
 .kpi-grid {
   display: grid;

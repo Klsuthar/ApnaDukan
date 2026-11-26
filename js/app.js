@@ -14,6 +14,7 @@
   let activeViewBillId = null;
   let deferredInstallPrompt = null;
   let activeStockSystem = 'all';
+  let activeSalesPeriod = 'all';
 
   function isUrgentStock(item) {
     const key = Storage.getStockStatus(item).key;
@@ -248,14 +249,49 @@
     `;
   }
 
+  const PERIOD_LABELS = {
+    today: { sales: 'आज की बिक्री / Today Sales', profit: 'आज का मुनाफा / Today Profit' },
+    month: { sales: '1 महीने की बिक्री / 30d Sales', profit: '1 महीने का मुनाफा / 30d Profit' },
+    year: { sales: '1 साल की बिक्री / 1y Sales', profit: '1 साल का मुनाफा / 1y Profit' },
+    all: { sales: 'कुल बिक्री / Total Sales', profit: 'कुल मुनाफा / Est. Profit' }
+  };
+
+  function setSalesPeriod(period) {
+    activeSalesPeriod = PERIOD_LABELS[period] ? period : 'all';
+    document.querySelectorAll('.period-tab-btn').forEach((btn) => {
+      btn.classList.toggle('active', btn.getAttribute('data-period') === activeSalesPeriod);
+    });
+    document.querySelectorAll('[data-period-card]').forEach((card) => {
+      card.classList.toggle('active', card.getAttribute('data-period-card') === activeSalesPeriod);
+    });
+    renderDashboardSalesKPIs();
+  }
+
+  function renderDashboardSalesKPIs() {
+    const summary = Storage.computePeriodSummary(state);
+    const activeData = summary[activeSalesPeriod] || summary.all;
+    const labels = PERIOD_LABELS[activeSalesPeriod] || PERIOD_LABELS.all;
+
+    document.getElementById('kpi-sales-label').textContent = labels.sales;
+    document.getElementById('kpi-profit-label').textContent = labels.profit;
+    document.getElementById('kpi-total-sales').textContent = Storage.formatINR(activeData.totalSales);
+    document.getElementById('kpi-est-profit').textContent = Storage.formatINR(activeData.estProfit);
+
+    ['today', 'month', 'all'].forEach((key) => {
+      const data = summary[key];
+      document.getElementById(`p-${key}-sales`).textContent = Storage.formatINR(data.totalSales);
+      document.getElementById(`p-${key}-profit`).textContent = Storage.formatINR(data.estProfit);
+      document.getElementById(`p-${key}-bills`).textContent = `${data.billCount} बिल`;
+    });
+  }
+
   function renderDashboard() {
     const metrics = Storage.computeMetrics(state);
     document.getElementById('kpi-total-products').textContent = String(metrics.totalProducts);
     document.getElementById('kpi-stock-value').textContent = Storage.formatINR(metrics.totalStockValue);
-    document.getElementById('kpi-total-sales').textContent = Storage.formatINR(metrics.totalSales);
-    document.getElementById('kpi-est-profit').textContent = Storage.formatINR(metrics.estProfit);
     document.getElementById('kpi-low-stock').textContent = String(metrics.lowStockCount);
     document.getElementById('kpi-out-stock').textContent = String(metrics.outOfStockCount);
+    renderDashboardSalesKPIs();
 
     const alertCount = metrics.lowStockCount + metrics.outOfStockCount;
     ['nav-stock-badge-desktop', 'nav-stock-badge-mobile'].forEach((id) => {
@@ -1087,6 +1123,15 @@
         console.error(err);
         showToast('बैकअप डाउनलोड करने में त्रुटि आई।', 'error');
       }
+    });
+
+    // Dashboard Sales & Profit Period switcher (Today / 1 Month / 1 Year / Total)
+    document.getElementById('sales-period-tabs').addEventListener('click', (e) => {
+      const btn = e.target.closest('.period-tab-btn');
+      if (btn) setSalesPeriod(btn.getAttribute('data-period'));
+    });
+    document.querySelectorAll('[data-period-card]').forEach((card) => {
+      card.addEventListener('click', () => setSalesPeriod(card.getAttribute('data-period-card')));
     });
 
     // Dashboard alert jump & section shortcuts
